@@ -653,6 +653,103 @@ footer span { color: var(--green); }
   opacity: 1;
   transform: translateY(0);
 }
+
+/* OWNER STATUS BANNER */
+.owner-status-banner {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 200;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 240px;
+  max-width: 300px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+  backdrop-filter: blur(12px);
+  transition: all 0.5s ease;
+  animation: slideInBanner 0.5s 1s ease both;
+}
+
+@keyframes slideInBanner {
+  from { opacity:0; transform: translateY(20px); }
+  to   { opacity:1; transform: translateY(0); }
+}
+
+.owner-status-banner.fast {
+  border-color: rgba(0,245,160,0.3);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6), 0 0 20px rgba(0,245,160,0.06);
+}
+
+.owner-status-banner.slow {
+  border-color: rgba(255,214,10,0.3);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6), 0 0 20px rgba(255,214,10,0.06);
+}
+
+.owner-status-banner.offline {
+  border-color: rgba(255,77,109,0.3);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6), 0 0 20px rgba(255,77,109,0.06);
+}
+
+.status-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #1a1f35, #0d1021);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.status-dot {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--card);
+}
+
+.status-dot.green { background: var(--green); box-shadow: 0 0 6px var(--green); animation: blink 1.5s ease-in-out infinite; }
+.status-dot.yellow { background: var(--yellow); box-shadow: 0 0 6px var(--yellow); animation: blink 2s ease-in-out infinite; }
+.status-dot.red { background: var(--red); }
+
+.status-info { flex: 1; min-width: 0; }
+
+.status-name {
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--white);
+  margin-bottom: 2px;
+}
+
+.status-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  font-weight: 500;
+}
+
+.status-label.green { color: var(--green); }
+.status-label.yellow { color: var(--yellow); }
+.status-label.red { color: var(--red); }
+
+.status-time {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: var(--muted);
+  margin-top: 2px;
+}
 </style>
 </head>
 <body>
@@ -917,6 +1014,19 @@ footer span { color: var(--green); }
   ✦ <span>BocchiBOT</span> • © Rayzell • Made with ❤️ ✦
 </footer>
 
+<!-- OWNER STATUS BANNER -->
+<div class="owner-status-banner" id="statusBanner">
+  <div class="status-avatar">
+    👤
+    <span class="status-dot" id="statusDot"></span>
+  </div>
+  <div class="status-info">
+    <div class="status-name">Owner BocchiBOT</div>
+    <div class="status-label" id="statusLabel"></div>
+    <div class="status-time" id="statusTime"></div>
+  </div>
+</div>
+
 <script>
 // Scroll reveal
 const observer = new IntersectionObserver((entries) => {
@@ -928,6 +1038,70 @@ const observer = new IntersectionObserver((entries) => {
 }, { threshold: 0.1 });
 
 document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// ── OWNER STATUS ──────────────────────────────────────────
+// Fast respon : 09:00 – 22:29
+// Slow res    : 22:30 – 23:59
+// Istirahat   : 00:00 – 08:59
+
+function updateOwnerStatus() {
+  const now   = new Date();
+  const h     = now.getHours();
+  const m     = now.getMinutes();
+  const total = h * 60 + m; // menit sejak 00:00
+
+  const banner = document.getElementById('statusBanner');
+  const dot    = document.getElementById('statusDot');
+  const label  = document.getElementById('statusLabel');
+  const time   = document.getElementById('statusTime');
+
+  // Format jam sekarang
+  const hh = String(h).padStart(2,'0');
+  const mm = String(m).padStart(2,'0');
+  const nowStr = `${hh}:${mm} WIB`;
+
+  // Tentukan status
+  const FAST_START  = 9 * 60;        // 09:00
+  const SLOW_START  = 22 * 60 + 30;  // 22:30
+  // 00:00–08:59 = istirahat
+
+  let mode;
+  if (total >= FAST_START && total < SLOW_START) {
+    mode = 'fast';
+  } else if (total >= SLOW_START) {
+    mode = 'slow';
+  } else {
+    mode = 'rest'; // 00:00 – 08:59
+  }
+
+  // Reset classes
+  banner.classList.remove('fast','slow','offline');
+  dot.classList.remove('green','yellow','red');
+  label.classList.remove('green','yellow','red');
+
+  if (mode === 'fast') {
+    banner.classList.add('fast');
+    dot.classList.add('green');
+    label.classList.add('green');
+    label.textContent = '● FAST RESPON';
+    time.textContent  = `Aktif sekarang • ${nowStr}`;
+  } else if (mode === 'slow') {
+    banner.classList.add('slow');
+    dot.classList.add('yellow');
+    label.classList.add('yellow');
+    label.textContent = '◐ SLOW RES';
+    time.textContent  = `Jam istirahat • Fast respon mulai 09:00`;
+  } else {
+    banner.classList.add('offline');
+    dot.classList.add('red');
+    label.classList.add('red');
+    label.textContent = '○ ISTIRAHAT';
+    time.textContent  = `Fast respon mulai 09:00 WIB`;
+  }
+}
+
+updateOwnerStatus();
+setInterval(updateOwnerStatus, 30000); // update tiap 30 detik
 </script>
 </body>
 </html>
