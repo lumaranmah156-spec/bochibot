@@ -195,64 +195,6 @@ footer span { color:var(--green); }
 .status-label.yellow { color:var(--yellow); }
 .status-label.red { color:var(--red); }
 .status-time { font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-top:2px; }
-
-/* MODAL */
-.modal-overlay {
-  display:none;position:fixed;inset:0;z-index:1000;
-  background:rgba(0,0,0,0.85);backdrop-filter:blur(8px);
-  align-items:center;justify-content:center;
-}
-.modal-overlay.active { display:flex; }
-.modal-box {
-  background:#0d1021;border:1px solid #1a1f35;border-radius:24px;
-  padding:36px 32px;max-width:420px;width:calc(100% - 48px);
-  position:relative;max-height:90vh;overflow-y:auto;
-}
-.modal-close { position:absolute;top:16px;right:16px;background:transparent;border:none;color:var(--muted);font-size:20px;cursor:pointer;line-height:1; }
-.modal-section-label { font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--green);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:8px; }
-.modal-title { font-size:22px;font-weight:900;color:var(--white);margin-bottom:4px;letter-spacing:-0.02em; }
-.modal-subtitle { font-size:14px;color:var(--muted);margin-bottom:24px; }
-
-.form-group { margin-bottom:14px; }
-.form-label { display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-family:'JetBrains Mono',monospace;letter-spacing:0.05em; }
-.form-input {
-  width:100%;background:#06080f;border:1px solid #1a1f35;border-radius:10px;
-  padding:12px 14px;color:#e8eaf6;font-size:14px;outline:none;
-  font-family:'Cabinet Grotesk',sans-serif;box-sizing:border-box;transition:border-color 0.2s;
-}
-.form-input:focus { border-color:rgba(0,245,160,0.4); }
-
-.form-error { display:none;margin-top:12px;padding:10px 14px;background:rgba(255,77,109,0.08);border:1px solid rgba(255,77,109,0.2);border-radius:8px;font-size:13px;color:var(--red); }
-
-.btn-submit {
-  margin-top:20px;width:100%;background:var(--green);color:#06080f;
-  border:none;border-radius:12px;padding:15px;font-size:15px;font-weight:900;
-  cursor:pointer;font-family:'Cabinet Grotesk',sans-serif;transition:all 0.2s;
-}
-.btn-submit:hover { transform:translateY(-1px);box-shadow:0 6px 24px rgba(0,245,160,0.3); }
-.btn-submit:disabled { opacity:0.6;cursor:not-allowed;transform:none; }
-
-/* QR Step */
-.qr-wrap { text-align:center; }
-.qr-box { background:#fff;border-radius:16px;padding:16px;display:inline-block;margin-bottom:16px; }
-.qr-box img { width:240px;height:240px;display:block; }
-.countdown-label { font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);margin-bottom:4px; }
-.countdown-num { font-size:28px;font-weight:900;color:var(--yellow);letter-spacing:-0.02em; }
-.poll-status { font-size:13px;color:var(--muted);margin:12px 0 16px; }
-.poll-dot { display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--yellow);animation:blink 1s ease-in-out infinite;margin-right:6px;vertical-align:middle; }
-
-/* Sukses */
-.sukses-wrap { text-align:center; }
-.sukses-icon { font-size:56px;margin-bottom:16px; }
-.sukses-title { font-size:22px;font-weight:900;color:var(--green);margin-bottom:8px; }
-.sukses-desc { font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:24px; }
-.sukses-detail { background:rgba(0,245,160,0.06);border:1px solid rgba(0,245,160,0.2);border-radius:12px;padding:16px;margin-bottom:24px;text-align:left;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--green);line-height:1.8;white-space:pre-line; }
-
-.btn-cancel { background:transparent;border:1px solid var(--border);border-radius:10px;padding:10px 20px;color:var(--muted);font-size:13px;cursor:pointer;font-family:'Cabinet Grotesk',sans-serif;transition:all 0.2s; }
-.btn-cancel:hover { border-color:rgba(255,77,109,0.3);color:var(--red); }
-.btn-close-sukses { background:var(--green);color:#06080f;border:none;border-radius:12px;padding:14px 32px;font-size:15px;font-weight:900;cursor:pointer;font-family:'Cabinet Grotesk',sans-serif; }
-.btn-retry { background:transparent;border:1px solid rgba(0,245,160,0.3);border-radius:12px;padding:12px 24px;color:var(--green);font-size:14px;cursor:pointer;font-family:'Cabinet Grotesk',sans-serif;transition:all 0.2s; }
-.btn-retry:hover { background:rgba(0,245,160,0.08); }
 </style>
 </head>
 <body>
@@ -339,7 +281,7 @@ footer span { color:var(--green); }
   <div class="reveal">
     <div class="section-label">// Harga Terjangkau</div>
     <h2 class="section-title">Pilih Plan yang<br>Cocok Buat Kamu</h2>
-    <p style="color:var(--muted);font-size:16px;line-height:1.6;">Bayar QRIS langsung di sini — bot aktif otomatis setelah pembayaran!</p>
+    <p style="color:var(--muted);font-size:16px;line-height:1.6;">Klik tombol order → chat langsung ke owner via WhatsApp — cepat & mudah!</p>
     <div class="slot-badge">
       <span id="slot-dot" style="width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);display:inline-block;animation:blink 1.5s ease-in-out infinite;"></span>
       <span id="slot-text">Mengecek slot...</span>
@@ -361,7 +303,7 @@ footer span { color:var(--green); }
         <li><span class="check">✓</span> Ephoto 30+ efek</li>
         <li class="dim"><span class="cross">✗</span> <span>Fitur NSFW (18+)</span></li>
       </ul>
-      <button class="btn-order outline" onclick="openModal('reguler')">Order Sekarang →</button>
+      <a href="https://wa.me/6285801573242?text=Halo%20min%2C%20mau%20order%20*Sewa%20Reguler*%20BocchiBOT%20(Rp10.000%2F30%20hari)%20dong!" class="btn-order outline" target="_blank">Order via WhatsApp →</a>
     </div>
 
     <!-- BUNDLE -->
@@ -379,7 +321,7 @@ footer span { color:var(--green); }
         <li><span class="check" style="color:var(--yellow)">★</span> <span style="color:var(--yellow);font-weight:700">Full akses NSFW (18+)</span></li>
         <li><span class="check" style="color:var(--green2)">✓</span> <span style="color:var(--green2);font-weight:700">Paket paling hemat!</span></li>
       </ul>
-      <button class="btn-order green" onclick="openModal('bundle')">Order Paket Ini →</button>
+      <a href="https://wa.me/6285801573242?text=Halo%20min%2C%20mau%20order%20*Paket%20Bundle%20Sewa%20%2B%20Upgrade%20Premium*%20BocchiBOT%20(Rp15.000%2F30%20hari)%20dong!" class="btn-order green" target="_blank">Order via WhatsApp →</a>
     </div>
 
     <!-- HEMAT -->
@@ -397,7 +339,7 @@ footer span { color:var(--green); }
         <li><span class="check">✓</span> Ephoto 30+ efek</li>
         <li class="dim"><span class="cross">✗</span> <span>Fitur NSFW (18+)</span></li>
       </ul>
-      <button class="btn-order yellow-btn" onclick="openModal('hemat')">Order Hemat →</button>
+      <a href="https://wa.me/6285801573242?text=Halo%20min%2C%20mau%20order%20*Paket%20Hemat*%20BocchiBOT%20(Rp5.000%2F15%20hari)%20dong!" class="btn-order yellow-btn" target="_blank">Order via WhatsApp →</a>
     </div>
   </div>
 
@@ -417,17 +359,17 @@ footer span { color:var(--green); }
         <li><span class="check" style="color:var(--green2)">✓</span> Games, Anime, Hiburan</li>
         <li class="dim"><span class="cross">✗</span> <span>Tidak bisa tanpa sewa aktif</span></li>
       </ul>
-      <button class="btn-order cyan-btn" onclick="openModal('premium')">Upgrade Premium →</button>
+      <a href="https://wa.me/6285801573242?text=Halo%20min%2C%20mau%20order%20*Upgrade%20Premium*%20BocchiBOT%20(Rp5.000%2F30%20hari)%20dong!" class="btn-order cyan-btn" target="_blank">Order via WhatsApp →</a>
     </div>
 
     <div class="price-card" style="display:flex;flex-direction:column;justify-content:center;gap:16px;background:rgba(0,217,245,0.03);border-color:rgba(0,217,245,0.12);">
-      <div style="font-size:28px;">⚡</div>
+      <div style="font-size:28px;">📱</div>
       <div>
-        <div style="font-size:16px;font-weight:800;color:var(--white);margin-bottom:8px;">Bayar QRIS, Bot Langsung Aktif!</div>
+        <div style="font-size:16px;font-weight:800;color:var(--white);margin-bottom:8px;">Cara Order Gampang Banget!</div>
         <div style="font-size:13px;color:var(--muted);line-height:1.7;">
-          1. Klik tombol order di paket yang kamu inginkan.<br>
-          2. Isi link grup WhatsApp kamu.<br>
-          3. Scan QRIS — bot otomatis join & aktif! 🚀
+          1. Klik tombol <strong style="color:var(--green)">Order via WhatsApp</strong> di paket yang kamu mau.<br>
+          2. Pesan otomatis terisi — tinggal kirim ke owner.<br>
+          3. Owner konfirmasi & bot langsung aktif di grup kamu! 🚀
         </div>
       </div>
       <a href="https://wa.me/6285801573242?text=Halo%20min%2C%20mau%20tanya%20BocchiBOT!" class="btn-order outline" style="margin-top:auto;" target="_blank">Tanya Owner →</a>
@@ -456,72 +398,12 @@ footer span { color:var(--green); }
   </div>
 </div>
 
-<!-- MODAL ORDER -->
-<div class="modal-overlay" id="modalOverlay">
-  <div class="modal-box">
-    <button class="modal-close" onclick="closeModal()">✕</button>
-
-    <!-- STEP 1: Form -->
-    <div id="stepForm">
-      <div class="modal-section-label">// Order Bot</div>
-      <div class="modal-title" id="modalTitle">Sewa Reguler</div>
-      <div class="modal-subtitle" id="modalSubtitle">Rp10.000 / 30 hari</div>
-      <div class="form-group">
-        <label class="form-label">LINK GRUP WHATSAPP</label>
-        <input class="form-input" id="inputLink" type="text" placeholder="https://chat.whatsapp.com/xxxx"/>
-      </div>
-      <div class="form-group">
-        <label class="form-label">NOMOR WA KAMU (untuk konfirmasi)</label>
-        <input class="form-input" id="inputNomor" type="text" placeholder="628xxxxxxxxxx"/>
-      </div>
-      <div class="form-error" id="formError"></div>
-      <button class="btn-submit" id="btnSubmit" onclick="submitOrder()">Lanjut ke Pembayaran →</button>
-    </div>
-
-    <!-- STEP 2: QR -->
-    <div id="stepQR" style="display:none;" class="qr-wrap">
-      <div class="modal-section-label">// Pembayaran QRIS</div>
-      <div class="modal-title">Scan QR Code</div>
-      <div class="modal-subtitle" id="qrSubtitle">Rp10.000 · Sewa Reguler</div>
-      <div class="qr-box"><img id="qrImage" src="" alt="QR Code"/></div>
-      <div class="countdown-label">SISA WAKTU</div>
-      <div class="countdown-num" id="countdown">--:--</div>
-      <div class="poll-status"><span class="poll-dot"></span><span id="pollText">Menunggu pembayaran...</span></div>
-      <button class="btn-cancel" onclick="closeModal()">Batalkan</button>
-    </div>
-
-    <!-- STEP 3: Sukses -->
-    <div id="stepSukses" style="display:none;" class="sukses-wrap">
-      <div class="sukses-icon">🎉</div>
-      <div class="sukses-title">Pembayaran Berhasil!</div>
-      <div class="sukses-desc">Bot sedang join grupmu dan mengaktifkan fitur.<br>Tunggu sebentar ya!</div>
-      <div class="sukses-detail" id="suksesDetail"></div>
-      <button class="btn-close-sukses" onclick="closeModal()">Tutup</button>
-    </div>
-
-    <!-- STEP 4: Expired -->
-    <div id="stepExpired" style="display:none;" class="sukses-wrap">
-      <div class="sukses-icon">⌛</div>
-      <div class="sukses-title" style="color:var(--red)">Waktu Habis</div>
-      <div class="sukses-desc">Pembayaran expired. Silakan buat order ulang.</div>
-      <button class="btn-retry" onclick="resetModal()">Coba Lagi</button>
-    </div>
-  </div>
-</div>
-
 <script>
 // ══════════════════════════════════════════════════════════════════
-//  CONFIG — ganti sesuai VPS kamu
+//  CONFIG
 // ══════════════════════════════════════════════════════════════════
 const API_BASE        = "https://simon-iso-kentucky-liability.trycloudflare.com";
 const STATUS_JSON_URL = "https://lumaranmah156-spec.github.io/bochibot/status.json";
-
-const PAKET_META = {
-  reguler: { label:"Sewa Reguler",          sub:"Rp10.000 / 30 hari" },
-  hemat:   { label:"Paket Hemat",            sub:"Rp5.000 / 15 hari"  },
-  bundle:  { label:"Sewa + Upgrade Premium", sub:"Rp15.000 / 30 hari" },
-  premium: { label:"Upgrade Premium",        sub:"Rp5.000 / 30 hari"  },
-};
 
 // ══════════════════════════════════════════════════════════════════
 //  SLOT CHECK
@@ -544,7 +426,7 @@ async function checkSlot() {
       text.textContent      = `Slot penuh (${d.aktif}/${d.max}) — Coba lagi nanti`;
     }
   } catch {
-    document.getElementById("slot-text").textContent = "Tidak dapat cek slot";
+    document.getElementById("slot-text").textContent = "Cek slot: hubungi owner";
   }
 }
 checkSlot();
@@ -588,137 +470,6 @@ async function fetchOwnerStatus() {
 }
 fetchOwnerStatus();
 setInterval(fetchOwnerStatus, 15000);
-
-// ══════════════════════════════════════════════════════════════════
-//  MODAL STATE
-// ══════════════════════════════════════════════════════════════════
-let currentPaket   = null;
-let currentOrderId = null;
-let timerInterval  = null;
-let pollInterval   = null;
-
-function showStep(step) {
-  ["Form","QR","Sukses","Expired"].forEach(s =>
-    document.getElementById("step"+s).style.display = s===step ? "block" : "none"
-  );
-}
-
-function openModal(paket) {
-  currentPaket = paket;
-  const meta = PAKET_META[paket];
-  document.getElementById("modalTitle").textContent    = meta.label;
-  document.getElementById("modalSubtitle").textContent = meta.sub;
-  document.getElementById("inputLink").value  = "";
-  document.getElementById("inputNomor").value = "";
-  document.getElementById("formError").style.display = "none";
-  document.getElementById("btnSubmit").disabled   = false;
-  document.getElementById("btnSubmit").textContent = "Lanjut ke Pembayaran →";
-  showStep("Form");
-  document.getElementById("modalOverlay").classList.add("active");
-}
-
-function closeModal() {
-  document.getElementById("modalOverlay").classList.remove("active");
-  clearInterval(timerInterval);
-  clearInterval(pollInterval);
-  currentOrderId = null;
-}
-
-function resetModal() {
-  clearInterval(timerInterval);
-  clearInterval(pollInterval);
-  showStep("Form");
-}
-
-document.getElementById("modalOverlay").addEventListener("click", function(e){
-  if (e.target === this) closeModal();
-});
-
-// ══════════════════════════════════════════════════════════════════
-//  SUBMIT ORDER
-// ══════════════════════════════════════════════════════════════════
-async function submitOrder() {
-  const link  = document.getElementById("inputLink").value.trim();
-  const nomor = document.getElementById("inputNomor").value.trim();
-  const errEl = document.getElementById("formError");
-  errEl.style.display = "none";
-
-  if (!link.includes("chat.whatsapp.com/")) {
-    errEl.textContent = "❌ Link grup tidak valid. Contoh: https://chat.whatsapp.com/xxxx";
-    errEl.style.display = "block"; return;
-  }
-  if (!/^628\d{8,12}$/.test(nomor)) {
-    errEl.textContent = "❌ Nomor WA tidak valid. Format: 628xxxxxxxxxx";
-    errEl.style.display = "block"; return;
-  }
-
-  const btn = document.getElementById("btnSubmit");
-  btn.disabled = true; btn.textContent = "Memproses...";
-
-  try {
-    const res  = await fetch(`${API_BASE}/order`, {
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({ paket:currentPaket, groupLink:link, nomor }),
-    });
-    const data = await res.json();
-
-    if (!data.ok) {
-      errEl.textContent = "❌ " + (data.error || "Gagal membuat order.");
-      errEl.style.display = "block";
-      btn.disabled = false; btn.textContent = "Lanjut ke Pembayaran →";
-      return;
-    }
-
-    currentOrderId = data.orderId;
-    const meta = PAKET_META[currentPaket];
-    document.getElementById("qrImage").src        = data.qr;
-    document.getElementById("qrSubtitle").textContent = `Rp${data.harga.toLocaleString("id-ID")} · ${meta.label}`;
-    showStep("QR");
-
-    // Countdown
-    const expAt = data.expiredAtMs;
-    timerInterval = setInterval(() => {
-      const sisa = expAt - Date.now();
-      if (sisa <= 0) {
-        clearInterval(timerInterval); clearInterval(pollInterval);
-        showStep("Expired"); return;
-      }
-      const m = Math.floor(sisa/60000);
-      const s = Math.floor((sisa%60000)/1000);
-      document.getElementById("countdown").textContent =
-        `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
-    }, 1000);
-
-    // Poll
-    pollInterval = setInterval(() => pollStatus(data), 3000);
-
-  } catch(e) {
-    errEl.textContent = "❌ Gagal menghubungi server. Pastikan API online.";
-    errEl.style.display = "block";
-    btn.disabled = false; btn.textContent = "Lanjut ke Pembayaran →";
-  }
-}
-
-async function pollStatus(orderData) {
-  try {
-    const r = await fetch(`${API_BASE}/status/${currentOrderId}`);
-    const d = await r.json();
-
-    if (d.status === "paid") {
-      clearInterval(timerInterval); clearInterval(pollInterval);
-      const meta    = PAKET_META[currentPaket];
-      const paidAt  = new Date(d.paidAt).toLocaleString("id-ID",{timeZone:"Asia/Jakarta"});
-      document.getElementById("suksesDetail").textContent =
-        `✓ Paket     : ${meta.label}\n✓ Harga     : Rp${orderData.harga.toLocaleString("id-ID")}\n✓ Dibayar   : ${paidAt} WIB\n✓ Order ID  : ${currentOrderId}`;
-      showStep("Sukses");
-      checkSlot();
-    } else if (d.status === "expired" || d.status === "not_found") {
-      clearInterval(timerInterval); clearInterval(pollInterval);
-      showStep("Expired");
-    }
-  } catch { /* retry next poll */ }
-}
 
 // ══════════════════════════════════════════════════════════════════
 //  SCROLL REVEAL
