@@ -4,662 +4,684 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BocchiBOT — WA Bot Serbaguna</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Syne+Mono&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #060810;
-  --surface: #0c1018;
-  --surface2: #111820;
-  --border: #1c2535;
-  --green: #00f082;
-  --cyan: #00d4ff;
-  --yellow: #f7cc44;
-  --purple: #a855f7;
-  --text: #c0cce0;
-  --muted: #48566a;
-  --white: #eef2fa;
+  --bg: #050609;
+  --surface: #0a0d12;
+  --surface2: #0f1318;
+  --border: #16202e;
+  --green: #00ff8c;
+  --cyan: #00e5ff;
+  --yellow: #ffe066;
+  --purple: #b06dff;
+  --pink: #ff4d8f;
+  --text: #a8b8cc;
+  --muted: #3a4d62;
+  --white: #e8f0fa;
   --wa: #25D366;
+  --font-display: 'Syne', sans-serif;
+  --font-mono: 'Syne Mono', monospace;
+  --font-body: 'DM Sans', sans-serif;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 html{scroll-behavior:smooth;}
-body{background:var(--bg);color:var(--text);font-family:'Space Grotesk',sans-serif;overflow-x:hidden;}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);overflow-x:hidden;cursor:none;}
 
-/* animated grid bg */
-body::before{
-  content:'';position:fixed;inset:0;
-  background-image:linear-gradient(rgba(0,240,130,0.018) 1px,transparent 1px),linear-gradient(90deg,rgba(0,240,130,0.018) 1px,transparent 1px);
-  background-size:56px 56px;pointer-events:none;z-index:0;
-  animation:gridDrift 60s linear infinite;
-}
-@keyframes gridDrift{0%{background-position:0 0}100%{background-position:56px 56px}}
+/* CUSTOM CURSOR */
+#cursor{position:fixed;width:10px;height:10px;border-radius:50%;background:var(--green);pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:transform 0.08s,background 0.2s;mix-blend-mode:screen;}
+#cursor-ring{position:fixed;width:38px;height:38px;border-radius:50%;border:1px solid rgba(0,255,140,0.35);pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:transform 0.18s ease,width 0.2s,height 0.2s,opacity 0.2s;}
+a:hover~#cursor,button:hover~#cursor{transform:translate(-50%,-50%) scale(2);}
 
-/* floating orbs */
-.orb{position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(80px);animation:orbFloat 20s ease-in-out infinite;}
-.orb1{width:400px;height:400px;background:rgba(0,240,130,0.04);top:-100px;left:-100px;animation-duration:25s;}
-.orb2{width:320px;height:320px;background:rgba(0,212,255,0.035);bottom:-80px;right:-60px;animation-duration:30s;animation-delay:-10s;}
-.orb3{width:250px;height:250px;background:rgba(168,85,247,0.03);top:50%;left:40%;animation-duration:22s;animation-delay:-6s;}
-@keyframes orbFloat{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(30px,-20px) scale(1.05)}66%{transform:translate(-20px,15px) scale(0.95)}}
+/* NOISE OVERLAY */
+body::after{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:1;opacity:0.4;}
+
+/* BG MESH */
+.bg-mesh{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
+.mesh-blob{position:absolute;border-radius:50%;filter:blur(120px);animation:blobDrift ease-in-out infinite;}
+.b1{width:600px;height:600px;background:radial-gradient(circle,rgba(0,255,140,0.055) 0%,transparent 70%);top:-200px;left:-150px;animation-duration:28s;}
+.b2{width:500px;height:500px;background:radial-gradient(circle,rgba(0,229,255,0.04) 0%,transparent 70%);top:30%;right:-150px;animation-duration:22s;animation-delay:-8s;}
+.b3{width:400px;height:400px;background:radial-gradient(circle,rgba(176,109,255,0.04) 0%,transparent 70%);bottom:-100px;left:40%;animation-duration:35s;animation-delay:-15s;}
+.b4{width:300px;height:300px;background:radial-gradient(circle,rgba(255,77,143,0.03) 0%,transparent 70%);top:60%;left:10%;animation-duration:20s;animation-delay:-5s;}
+@keyframes blobDrift{0%,100%{transform:translate(0,0)}33%{transform:translate(40px,-30px)}66%{transform:translate(-25px,20px)}}
+
+/* GRID BG */
+.grid-bg{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:linear-gradient(rgba(0,255,140,0.012) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,140,0.012) 1px,transparent 1px);
+  background-size:64px 64px;mask-image:radial-gradient(ellipse 80% 80% at 50% 20%,black 40%,transparent 100%);}
 
 /* NAVBAR */
-nav{
-  position:fixed;top:0;left:0;right:0;z-index:100;
-  height:62px;display:flex;align-items:center;justify-content:space-between;padding:0 36px;
-  background:rgba(6,8,16,0.82);backdrop-filter:blur(20px);
-  border-bottom:1px solid var(--border);
-  transition:all 0.3s;
-}
-nav.scrolled{background:rgba(6,8,16,0.95);border-color:rgba(0,240,130,0.1);}
-.logo{font-size:17px;font-weight:700;color:var(--white);display:flex;align-items:center;gap:9px;text-decoration:none;}
-.logo-icon{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,rgba(0,240,130,0.15),rgba(0,212,255,0.1));border:1px solid rgba(0,240,130,0.2);display:flex;align-items:center;justify-content:center;font-size:17px;}
-.logo em{font-style:normal;background:linear-gradient(120deg,var(--green),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.nav-right{display:flex;align-items:center;gap:28px;}
-.nav-right a{font-size:13px;color:var(--muted);text-decoration:none;transition:color 0.2s;position:relative;}
-.nav-right a:not(.nav-cta):hover{color:var(--green);}
-.nav-right a:not(.nav-cta)::after{content:'';position:absolute;bottom:-2px;left:0;width:0;height:1px;background:var(--green);transition:width 0.25s;}
-.nav-right a:not(.nav-cta):hover::after{width:100%;}
-.nav-cta{
-  background:var(--green);color:#050810;border:none;border-radius:9px;
-  padding:9px 20px;font-size:13px;font-weight:700;font-family:'Space Grotesk',sans-serif;
-  cursor:pointer;transition:all 0.2s;box-shadow:0 0 20px rgba(0,240,130,0.15);
-}
-.nav-cta:hover{transform:translateY(-1px);box-shadow:0 4px 24px rgba(0,240,130,0.3);}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 40px;transition:all 0.4s;}
+nav.solid{background:rgba(5,6,9,0.92);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);}
+.logo{font-family:var(--font-display);font-size:18px;font-weight:800;color:var(--white);display:flex;align-items:center;gap:10px;text-decoration:none;letter-spacing:-0.03em;}
+.logo-mark{width:36px;height:36px;border-radius:10px;border:1px solid rgba(0,255,140,0.2);display:flex;align-items:center;justify-content:center;font-size:18px;background:rgba(0,255,140,0.04);position:relative;overflow:hidden;}
+.logo-mark::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,255,140,0.15),transparent);animation:logoShine 3s ease-in-out infinite;}
+@keyframes logoShine{0%,100%{opacity:0.4}50%{opacity:1}}
+.logo-text em{font-style:normal;background:linear-gradient(90deg,var(--green),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.nav-links{display:flex;align-items:center;gap:32px;}
+.nav-links a{font-size:13px;font-weight:500;color:var(--muted);text-decoration:none;letter-spacing:0.01em;transition:color 0.2s;}
+.nav-links a:hover{color:var(--white);}
+.nav-order{background:transparent;border:1px solid rgba(0,255,140,0.3);color:var(--green);border-radius:8px;padding:8px 18px;font-size:13px;font-weight:700;font-family:var(--font-display);text-decoration:none;transition:all 0.2s;letter-spacing:-0.01em;}
+.nav-order:hover{background:rgba(0,255,140,0.08);border-color:var(--green);box-shadow:0 0 20px rgba(0,255,140,0.15);}
 
 /* HERO */
-.hero{
-  min-height:100vh;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;text-align:center;padding:110px 24px 80px;
-  position:relative;z-index:1;
-}
-.hero-badge{
-  display:inline-flex;align-items:center;gap:8px;
-  font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--green);
-  letter-spacing:0.1em;text-transform:uppercase;margin-bottom:32px;
-  border:1px solid rgba(0,240,130,0.15);border-radius:100px;padding:7px 16px;
-  background:rgba(0,240,130,0.05);backdrop-filter:blur(10px);
-  opacity:0;animation:fadeUp 0.7s 0.1s ease forwards;
-}
-.live{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2s ease-in-out infinite;}
-@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 8px var(--green)}50%{opacity:0.5;box-shadow:0 0 3px var(--green)}}
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:120px 24px 80px;position:relative;z-index:2;}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:10px;margin-bottom:40px;opacity:0;animation:riseUp 0.8s 0.2s ease forwards;}
+.eyebrow-pill{display:flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:10px;color:var(--green);letter-spacing:0.12em;text-transform:uppercase;border:1px solid rgba(0,255,140,0.15);border-radius:100px;padding:7px 16px;background:rgba(0,255,140,0.04);}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:livePulse 1.8s ease-in-out infinite;}
+@keyframes livePulse{0%,100%{box-shadow:0 0 0 0 rgba(0,255,140,0.6),0 0 6px var(--green)}50%{box-shadow:0 0 0 5px rgba(0,255,140,0),0 0 10px var(--green)}}
 
-h1.hero-h{
-  font-size:clamp(56px,10vw,104px);font-weight:700;letter-spacing:-0.045em;line-height:0.95;
-  color:var(--white);margin-bottom:24px;
-  opacity:0;animation:fadeUp 0.7s 0.2s ease forwards;
-}
-h1.hero-h em{font-style:normal;background:linear-gradient(135deg,var(--green) 0%,var(--cyan) 50%,var(--purple) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.hero-sub{font-size:17px;color:var(--muted);line-height:1.75;max-width:440px;margin-bottom:48px;opacity:0;animation:fadeUp 0.7s 0.3s ease forwards;}
-.hero-btns{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;opacity:0;animation:fadeUp 0.7s 0.4s ease forwards;}
+.hero-headline{font-family:var(--font-display);font-weight:800;letter-spacing:-0.06em;line-height:0.88;color:var(--white);margin-bottom:30px;opacity:0;animation:riseUp 0.9s 0.3s ease forwards;}
+.headline-l1{font-size:clamp(72px,13vw,140px);display:block;}
+.headline-l2{font-size:clamp(72px,13vw,140px);display:block;background:linear-gradient(130deg,var(--green) 0%,var(--cyan) 40%,var(--purple) 80%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 40px rgba(0,255,140,0.2));}
+.headline-l3{font-size:clamp(32px,5.5vw,58px);display:block;color:var(--muted);font-weight:400;letter-spacing:-0.03em;margin-top:8px;}
 
-.btn-main{
-  background:var(--green);color:#060810;border:none;border-radius:12px;
-  padding:16px 32px;font-size:15px;font-weight:700;font-family:'Space Grotesk',sans-serif;
-  cursor:pointer;text-decoration:none;transition:all 0.25s;
-  box-shadow:0 0 30px rgba(0,240,130,0.2);display:inline-flex;align-items:center;gap:8px;
-}
-.btn-main:hover{transform:translateY(-3px);box-shadow:0 8px 40px rgba(0,240,130,0.35);}
-.btn-out{
-  background:rgba(255,255,255,0.03);color:var(--text);border:1px solid var(--border);border-radius:12px;
-  padding:16px 26px;font-size:15px;font-weight:600;font-family:'Space Grotesk',sans-serif;
-  cursor:pointer;text-decoration:none;transition:all 0.25s;display:inline-flex;align-items:center;gap:8px;
-}
-.btn-out:hover{border-color:rgba(0,240,130,0.25);color:var(--green);background:rgba(0,240,130,0.04);}
+.hero-desc{font-size:16px;color:var(--muted);line-height:1.8;max-width:400px;margin:0 auto 52px;opacity:0;animation:riseUp 0.9s 0.45s ease forwards;}
+.hero-desc strong{color:var(--text);}
 
-/* hero particles */
-.particles{position:absolute;inset:0;overflow:hidden;pointer-events:none;}
-.particle{position:absolute;border-radius:50%;animation:particleFloat linear infinite;}
-@keyframes particleFloat{0%{transform:translateY(100vh) scale(0);opacity:0}10%{opacity:1}90%{opacity:0.5}100%{transform:translateY(-10vh) scale(1);opacity:0}}
+.hero-cta{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;opacity:0;animation:riseUp 0.9s 0.55s ease forwards;}
+.cta-primary{display:inline-flex;align-items:center;gap:10px;background:var(--green);color:#040607;text-decoration:none;border-radius:12px;padding:17px 34px;font-size:14px;font-weight:700;font-family:var(--font-display);letter-spacing:-0.01em;transition:all 0.3s;position:relative;overflow:hidden;}
+.cta-primary::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent);transform:translateX(-100%);transition:transform 0.5s;}
+.cta-primary:hover::before{transform:translateX(100%);}
+.cta-primary:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(0,255,140,0.35);}
+.cta-secondary{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,0.03);color:var(--text);text-decoration:none;border:1px solid var(--border);border-radius:12px;padding:17px 28px;font-size:14px;font-weight:500;transition:all 0.25s;}
+.cta-secondary:hover{border-color:rgba(0,255,140,0.2);color:var(--white);}
 
-@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
-
-/* STRIP */
-.strip{border-top:1px solid var(--border);border-bottom:1px solid var(--border);overflow:hidden;position:relative;z-index:1;background:rgba(0,0,0,0.2);}
-.strip-track{display:flex;white-space:nowrap;width:max-content;animation:marquee 28s linear infinite;}
-.strip-track:hover{animation-play-state:paused;}
+/* SCROLLING STATS BAR */
+.stats-bar{position:relative;z-index:2;border-top:1px solid var(--border);border-bottom:1px solid var(--border);overflow:hidden;background:rgba(0,0,0,0.3);}
+.stats-track{display:flex;white-space:nowrap;width:max-content;animation:marquee 30s linear infinite;}
 @keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-.strip-item{display:inline-flex;align-items:center;gap:8px;padding:16px 30px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;transition:color 0.2s;}
-.strip-item:hover{color:var(--green);}
-.strip-dot{color:var(--green);font-size:14px;}
+.stat-item{display:inline-flex;align-items:center;gap:12px;padding:14px 36px;border-right:1px solid var(--border);}
+.stat-num{font-family:var(--font-display);font-size:20px;font-weight:800;color:var(--white);letter-spacing:-0.04em;}
+.stat-num span{color:var(--green);}
+.stat-label{font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;}
 
-/* STATS */
-.nums{
-  display:grid;grid-template-columns:repeat(4,1fr);max-width:900px;margin:60px auto;
-  position:relative;z-index:1;border:1px solid var(--border);border-radius:20px;overflow:hidden;
-  background:var(--surface);
-}
-.num-box{
-  padding:36px 20px;text-align:center;border-right:1px solid var(--border);
-  transition:all 0.3s;cursor:default;position:relative;overflow:hidden;
-}
-.num-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--green),transparent);opacity:0;transition:opacity 0.3s;}
-.num-box:hover::before{opacity:1;}
-.num-box:last-child{border-right:none;}
-.num-box:hover{background:var(--surface2);}
-.num-val{font-size:42px;font-weight:700;color:var(--white);letter-spacing:-0.05em;line-height:1;margin-bottom:8px;}
-.num-val em{font-style:normal;color:var(--green);font-size:26px;}
-.num-lbl{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;}
+/* FLOATING CARD SECTION (Hero visual) */
+.hero-visual{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:700px;height:180px;pointer-events:none;opacity:0;animation:riseUp 1s 0.8s ease forwards;}
+.float-cards{position:absolute;bottom:0;width:100%;display:flex;justify-content:center;gap:12px;padding:0 24px;}
+.fcard{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 18px;display:flex;align-items:center;gap:12px;font-size:12px;position:relative;transition:transform 0.3s;}
+.fcard:nth-child(1){animation:cardFloat1 4s ease-in-out infinite;}
+.fcard:nth-child(2){animation:cardFloat2 5s ease-in-out infinite;}
+.fcard:nth-child(3){animation:cardFloat3 4.5s ease-in-out infinite;}
+@keyframes cardFloat1{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes cardFloat2{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+@keyframes cardFloat3{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.fcard-icon{font-size:22px;}
+.fcard-info{}
+.fcard-name{font-family:var(--font-display);font-size:11px;font-weight:700;color:var(--white);letter-spacing:-0.01em;}
+.fcard-sub{font-family:var(--font-mono);font-size:9px;color:var(--muted);margin-top:2px;}
+.fcard-badge{position:absolute;top:-8px;right:12px;font-family:var(--font-mono);font-size:8px;font-weight:700;padding:2px 8px;border-radius:100px;}
+.badge-g{background:var(--green);color:#040607;}
+.badge-c{background:var(--cyan);color:#040607;}
+.badge-p{background:var(--purple);color:white;}
 
-/* SECTIONS */
-.sec{max-width:1080px;margin:0 auto;padding:100px 24px;position:relative;z-index:1;}
-.sec-tag{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--green);letter-spacing:0.14em;text-transform:uppercase;margin-bottom:16px;display:flex;align-items:center;gap:10px;}
-.sec-tag::before{content:'';width:24px;height:1px;background:linear-gradient(90deg,transparent,var(--green));}
-.sec-title{font-size:clamp(32px,4.5vw,52px);font-weight:700;letter-spacing:-0.035em;color:var(--white);line-height:1.02;margin-bottom:14px;}
-.sec-sub{font-size:15px;color:var(--muted);line-height:1.75;max-width:420px;margin-bottom:56px;}
+@keyframes riseUp{from{opacity:0;transform:translateY(32px)}to{opacity:1;transform:translateY(0)}}
 
-/* FEATURES */
-.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
-.feat-card{
-  background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:30px;
-  transition:all 0.3s;position:relative;overflow:hidden;group:true;
-}
-.feat-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,240,130,0.03),transparent);opacity:0;transition:opacity 0.3s;border-radius:18px;}
-.feat-card:hover{border-color:rgba(0,240,130,0.2);background:var(--surface2);transform:translateY(-4px);box-shadow:0 16px 48px rgba(0,0,0,0.4);}
-.feat-card:hover::before{opacity:1;}
-.feat-card.wide{grid-column:span 2;}
-.feat-icon{font-size:30px;margin-bottom:18px;display:block;animation:none;transition:transform 0.3s;}
-.feat-card:hover .feat-icon{transform:scale(1.1) rotate(-3deg);}
-.feat-name{font-size:15px;font-weight:700;color:var(--white);margin-bottom:10px;letter-spacing:-0.01em;}
-.feat-desc{font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:18px;}
-.tags{display:flex;flex-wrap:wrap;gap:5px;}
-.tag{font-family:'JetBrains Mono',monospace;font-size:9px;border-radius:6px;padding:3px 9px;border:1px solid;transition:all 0.2s;}
-.tag{color:rgba(0,240,130,0.5);background:rgba(0,240,130,0.04);border-color:rgba(0,240,130,0.1);}
-.tag.c{color:rgba(0,212,255,0.5);background:rgba(0,212,255,0.04);border-color:rgba(0,212,255,0.1);}
-.tag.y{color:rgba(247,204,68,0.5);background:rgba(247,204,68,0.04);border-color:rgba(247,204,68,0.1);}
-.tag.p{color:rgba(168,85,247,0.5);background:rgba(168,85,247,0.04);border-color:rgba(168,85,247,0.1);}
+/* BENTO FEATURES */
+.bento-sec{max-width:1100px;margin:0 auto;padding:100px 24px;position:relative;z-index:2;}
+.section-header{margin-bottom:64px;}
+.s-tag{font-family:var(--font-mono);font-size:9px;color:var(--green);text-transform:uppercase;letter-spacing:0.15em;margin-bottom:14px;display:flex;align-items:center;gap:12px;}
+.s-tag::before{content:'';width:28px;height:1px;background:var(--green);}
+.s-title{font-family:var(--font-display);font-size:clamp(34px,5vw,58px);font-weight:800;letter-spacing:-0.05em;color:var(--white);line-height:0.95;margin-bottom:16px;}
+.s-sub{font-size:15px;color:var(--muted);line-height:1.8;max-width:380px;}
+
+.bento-grid{display:grid;grid-template-columns:repeat(12,1fr);grid-template-rows:auto;gap:12px;}
+.bento{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:28px;position:relative;overflow:hidden;transition:all 0.35s;}
+.bento:hover{border-color:rgba(0,255,140,0.15);background:var(--surface2);transform:translateY(-3px);}
+.bento::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(0,255,140,0.3),transparent);opacity:0;transition:opacity 0.3s;}
+.bento:hover::before{opacity:1;}
+
+.b-col-7{grid-column:span 7;}
+.b-col-5{grid-column:span 5;}
+.b-col-4{grid-column:span 4;}
+.b-col-8{grid-column:span 8;}
+.b-col-6{grid-column:span 6;}
+.b-col-12{grid-column:span 12;}
+
+.bento-emoji{font-size:36px;margin-bottom:20px;display:block;transition:transform 0.3s;}
+.bento:hover .bento-emoji{transform:scale(1.1) rotate(-5deg);}
+.bento-title{font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--white);letter-spacing:-0.02em;margin-bottom:10px;}
+.bento-desc{font-size:13px;color:var(--muted);line-height:1.75;margin-bottom:16px;}
+.bento-tags{display:flex;flex-wrap:wrap;gap:5px;}
+.btag{font-family:var(--font-mono);font-size:9px;border-radius:5px;padding:3px 8px;letter-spacing:0.04em;}
+.btag-g{color:rgba(0,255,140,0.6);background:rgba(0,255,140,0.05);border:1px solid rgba(0,255,140,0.1);}
+.btag-c{color:rgba(0,229,255,0.6);background:rgba(0,229,255,0.05);border:1px solid rgba(0,229,255,0.1);}
+.btag-y{color:rgba(255,224,102,0.6);background:rgba(255,224,102,0.05);border:1px solid rgba(255,224,102,0.1);}
+.btag-p{color:rgba(176,109,255,0.6);background:rgba(176,109,255,0.05);border:1px solid rgba(176,109,255,0.1);}
+.btag-pk{color:rgba(255,77,143,0.6);background:rgba(255,77,143,0.05);border:1px solid rgba(255,77,143,0.1);}
+
+/* special bento: command counter */
+.bento-counter{text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:200px;}
+.counter-num{font-family:var(--font-display);font-size:86px;font-weight:800;letter-spacing:-0.08em;line-height:1;background:linear-gradient(135deg,var(--green),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.counter-label{font-family:var(--font-mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.12em;margin-top:6px;}
+
+/* command chip cloud */
+.chip-cloud{display:flex;flex-wrap:wrap;gap:6px;margin-top:16px;}
+.chip{font-family:var(--font-mono);font-size:9px;padding:4px 10px;border-radius:5px;background:rgba(255,255,255,0.03);border:1px solid var(--border);color:var(--muted);transition:all 0.2s;}
+.chip:hover{color:var(--green);border-color:rgba(0,255,140,0.2);}
+
+/* special bento: mini terminal */
+.terminal{background:#030506;border-radius:12px;padding:16px;margin-top:14px;font-family:var(--font-mono);}
+.term-bar{display:flex;gap:5px;margin-bottom:12px;}
+.term-dot{width:8px;height:8px;border-radius:50%;}
+.td1{background:#ff5f57;}.td2{background:#febc2e;}.td3{background:#28c840;}
+.term-line{font-size:11px;line-height:1.9;}
+.tc-muted{color:#2d3f52;}
+.tc-green{color:var(--green);}
+.tc-cyan{color:var(--cyan);}
+.tc-white{color:#c8d8e8;}
+.tc-yellow{color:var(--yellow);}
+.blink{animation:blink 1.1s step-end infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
 
 /* PRICING */
-.price-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:14px;}
-.price-grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;max-width:720px;margin:0 auto;}
-.price-card{
-  background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:34px 30px;
-  position:relative;overflow:hidden;transition:transform 0.3s,box-shadow 0.3s;
-}
-.price-card:hover{transform:translateY(-4px);box-shadow:0 20px 60px rgba(0,0,0,0.4);}
-.price-card.featured{border-color:rgba(0,240,130,0.22);background:linear-gradient(160deg,rgba(0,240,130,0.04),var(--surface));}
-.price-card.featured::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--green),transparent);}
-.price-card.yellow-card{border-color:rgba(247,204,68,0.18);}
-.price-card.cyan-card{border-color:rgba(0,212,255,0.18);}
-.price-badge{position:absolute;top:20px;right:20px;font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;border-radius:100px;padding:4px 12px;font-family:'JetBrains Mono',monospace;}
-.price-badge.g{background:var(--green);color:#050810;}
-.price-badge.y{background:var(--yellow);color:#050810;}
-.price-badge.c{background:var(--cyan);color:#050810;}
-.price-plan{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:14px;}
-.price-val{font-size:50px;font-weight:700;color:var(--white);letter-spacing:-0.06em;line-height:1;}
-.price-val sup{font-size:18px;vertical-align:super;font-weight:600;}
-.price-period{font-size:11px;color:var(--muted);margin-bottom:26px;margin-top:5px;}
-.price-divider{height:1px;background:var(--border);margin-bottom:22px;}
-.price-req{display:inline-flex;align-items:center;gap:6px;background:rgba(0,212,255,0.07);border:1px solid rgba(0,212,255,0.14);border-radius:7px;padding:6px 11px;margin-bottom:18px;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--cyan);}
-.price-feats{list-style:none;display:flex;flex-direction:column;gap:11px;margin-bottom:30px;}
-.price-feats li{font-size:13px;color:var(--text);display:flex;gap:11px;align-items:flex-start;line-height:1.45;}
-.price-feats li.dim{color:var(--muted);}
-.pcheck{flex-shrink:0;font-size:12px;margin-top:1px;}
-.pcheck.g{color:var(--green);}.pcheck.y{color:var(--yellow);}.pcheck.c{color:var(--cyan);}.pcheck.x{color:var(--muted);}
-.price-btn{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;padding:14px;border-radius:11px;border:none;font-size:13px;font-weight:700;font-family:'Space Grotesk',sans-serif;cursor:pointer;text-decoration:none;transition:all 0.25s;}
-.price-btn.g{background:var(--green);color:#050810;}.price-btn.g:hover{box-shadow:0 4px 24px rgba(0,240,130,0.35);transform:translateY(-1px);}
-.price-btn.y{background:var(--yellow);color:#050810;}.price-btn.y:hover{box-shadow:0 4px 24px rgba(247,204,68,0.3);transform:translateY(-1px);}
-.price-btn.c{background:var(--cyan);color:#050810;}.price-btn.c:hover{box-shadow:0 4px 24px rgba(0,212,255,0.3);transform:translateY(-1px);}
-.price-btn.ghost{background:transparent;color:var(--text);border:1px solid var(--border);}.price-btn.ghost:hover{border-color:rgba(0,240,130,0.25);color:var(--green);}
+.pricing-sec{max-width:1100px;margin:0 auto;padding:60px 24px 100px;position:relative;z-index:2;}
+.price-wrap{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:56px;}
+.pc{background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:36px 30px;position:relative;overflow:hidden;transition:all 0.3s;}
+.pc:hover{transform:translateY(-5px);box-shadow:0 24px 60px rgba(0,0,0,0.5);}
+.pc.featured{border-color:rgba(0,255,140,0.2);background:linear-gradient(160deg,rgba(0,255,140,0.04),var(--surface));}
+.pc.featured::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--green),var(--cyan),transparent);}
+.pc.warm{border-color:rgba(255,224,102,0.15);}
+.pc.cool{border-color:rgba(0,229,255,0.12);}
+.pc-badge{position:absolute;top:22px;right:22px;font-family:var(--font-mono);font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:4px 12px;border-radius:100px;}
+.pbg{background:var(--green);color:#040607;}
+.pby{background:var(--yellow);color:#040607;}
+.pbc{background:var(--cyan);color:#040607;}
+.pc-plan{font-family:var(--font-mono);font-size:9px;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:16px;}
+.pc-price{font-family:var(--font-display);font-size:58px;font-weight:800;color:var(--white);letter-spacing:-0.07em;line-height:1;}
+.pc-price sup{font-size:20px;vertical-align:super;font-weight:700;}
+.pc-period{font-family:var(--font-mono);font-size:10px;color:var(--muted);margin:8px 0 28px;}
+.pc-line{height:1px;background:var(--border);margin-bottom:24px;}
+.pc-feats{list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:32px;}
+.pc-feats li{font-size:13px;color:var(--text);display:flex;gap:10px;align-items:flex-start;line-height:1.5;}
+.pc-feats li.dim{color:var(--muted);}
+.ck{flex-shrink:0;font-size:11px;margin-top:1px;}
+.ckg{color:var(--green);}.cky{color:var(--yellow);}.ckc{color:var(--cyan);}.ckx{color:var(--muted);}
+.pc-btn{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;padding:14px;border-radius:11px;border:none;font-size:13px;font-weight:700;font-family:var(--font-display);cursor:pointer;text-decoration:none;transition:all 0.25s;letter-spacing:-0.01em;}
+.pb-g{background:var(--green);color:#040607;}.pb-g:hover{box-shadow:0 6px 28px rgba(0,255,140,0.3);transform:translateY(-1px);}
+.pb-y{background:var(--yellow);color:#040607;}.pb-y:hover{box-shadow:0 6px 28px rgba(255,224,102,0.3);transform:translateY(-1px);}
+.pb-c{background:var(--cyan);color:#040607;}.pb-c:hover{box-shadow:0 6px 28px rgba(0,229,255,0.25);transform:translateY(-1px);}
+.pb-ghost{background:transparent;color:var(--text);border:1px solid var(--border);}.pb-ghost:hover{border-color:rgba(0,255,140,0.25);color:var(--green);}
 
-.slot-pill{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:100px;padding:9px 20px;margin:28px auto 0;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);transition:all 0.3s;}
+/* EXTEND ROW */
+.extend-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px;}
+.ext-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 22px;display:flex;align-items:center;justify-content:space-between;transition:all 0.25s;}
+.ext-card:hover{border-color:rgba(0,229,255,0.15);background:var(--surface2);}
+.ext-name{font-family:var(--font-display);font-size:13px;font-weight:700;color:var(--white);}
+.ext-days{font-family:var(--font-mono);font-size:9px;color:var(--muted);margin-top:3px;}
+.ext-price{font-family:var(--font-display);font-size:18px;font-weight:800;color:var(--cyan);letter-spacing:-0.04em;}
+.ext-btn{font-family:var(--font-mono);font-size:9px;color:var(--cyan);border:1px solid rgba(0,229,255,0.2);border-radius:6px;padding:4px 10px;text-decoration:none;transition:all 0.2s;display:inline-block;margin-top:8px;}
+.ext-btn:hover{background:rgba(0,229,255,0.07);}
 
-/* HOW TO ORDER */
-.steps{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--border);border-radius:20px;overflow:hidden;margin-top:56px;}
-.step{background:var(--surface);padding:38px 30px;transition:background 0.25s;position:relative;overflow:hidden;}
-.step::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--green),var(--cyan));transform:scaleX(0);transition:transform 0.3s;transform-origin:left;}
-.step:hover::after{transform:scaleX(1);}
-.step:hover{background:var(--surface2);}
-.step-n{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.1em;margin-bottom:18px;}
-.step-icon{font-size:30px;margin-bottom:16px;display:block;transition:transform 0.3s;}
-.step:hover .step-icon{transform:scale(1.12);}
-.step-title{font-size:16px;font-weight:700;color:var(--white);margin-bottom:9px;}
-.step-desc{font-size:13px;color:var(--muted);line-height:1.7;}
+/* SLOT INDICATOR */
+.slot-row{display:flex;justify-content:center;margin-top:36px;}
+.slot-pill{display:inline-flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:100px;padding:10px 22px;font-family:var(--font-mono);font-size:10px;color:var(--muted);transition:all 0.3s;}
+
+/* STEPS */
+.steps-sec{max-width:1100px;margin:0 auto;padding:0 24px 100px;position:relative;z-index:2;}
+.steps-grid{display:grid;grid-template-columns:repeat(3,1fr);position:relative;}
+.steps-grid::before{content:'';position:absolute;top:42px;left:calc(16.66% + 8px);right:calc(16.66% + 8px);height:1px;background:linear-gradient(90deg,var(--green),var(--cyan),var(--purple));opacity:0.25;}
+.step-card{padding:32px;text-align:center;}
+.step-num-wrap{display:flex;align-items:center;justify-content:center;margin-bottom:24px;}
+.step-num{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:20px;font-weight:800;color:var(--bg);position:relative;}
+.sn1{background:var(--green);}
+.sn2{background:var(--cyan);}
+.sn3{background:var(--purple);}
+.step-title{font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--white);letter-spacing:-0.02em;margin-bottom:10px;}
+.step-desc{font-size:13px;color:var(--muted);line-height:1.75;}
 
 /* TRUST */
-.trust-box{
-  background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:52px;
-  position:relative;overflow:hidden;
-}
-.trust-box::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(0,240,130,0.45),rgba(0,212,255,0.35),transparent);}
-.trust-badges{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:30px;}
-.trust-badge{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;border-radius:100px;padding:5px 13px;border:1px solid;}
-.trust-badge.g{color:var(--green);border-color:rgba(0,240,130,0.2);background:rgba(0,240,130,0.06);}
-.trust-badge.y{color:var(--yellow);border-color:rgba(247,204,68,0.2);background:rgba(247,204,68,0.06);}
-.trust-badge.c{color:var(--cyan);border-color:rgba(0,212,255,0.2);background:rgba(0,212,255,0.06);}
-.trust-title{font-size:clamp(30px,4vw,48px);font-weight:700;letter-spacing:-0.03em;color:var(--white);line-height:1.02;margin-bottom:16px;}
+.trust-sec{max-width:1100px;margin:0 auto;padding:0 24px 100px;position:relative;z-index:2;}
+.trust-inner{background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:56px;position:relative;overflow:hidden;}
+.trust-inner::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--green),var(--cyan),var(--purple),transparent);}
+.trust-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:start;}
+.trust-title{font-family:var(--font-display);font-size:clamp(32px,4vw,52px);font-weight:800;letter-spacing:-0.06em;color:var(--white);line-height:0.95;margin-bottom:16px;}
 .trust-title em{font-style:normal;background:linear-gradient(120deg,var(--green),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.trust-desc{font-size:14px;color:var(--muted);line-height:1.8;max-width:530px;margin-bottom:48px;}
-.timeline{display:flex;flex-direction:column;gap:0;}
-.tl{display:flex;gap:20px;}
-.tl-left{display:flex;flex-direction:column;align-items:center;}
-.tl-dot{width:14px;height:14px;border-radius:50%;flex-shrink:0;transition:box-shadow 0.3s;}
-.tl-dot.g{background:var(--green);box-shadow:0 0 12px rgba(0,240,130,0.5);}
-.tl-dot.c{background:var(--cyan);box-shadow:0 0 12px rgba(0,212,255,0.5);}
-.tl-dot.y{background:var(--yellow);box-shadow:0 0 12px rgba(247,204,68,0.5);}
-.tl-line{width:1px;flex:1;background:linear-gradient(var(--border),transparent);margin:5px 0;}
-.tl-content{padding-bottom:32px;}
-.tl-year{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--green);letter-spacing:0.09em;margin-bottom:5px;}
-.tl-title-txt{font-size:15px;font-weight:700;color:var(--white);margin-bottom:6px;}
-.tl-desc-txt{font-size:13px;color:var(--muted);line-height:1.65;max-width:470px;}
-.trust-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;margin-top:14px;border:1px solid var(--border);border-radius:18px;overflow:hidden;}
-.ts{background:var(--surface);padding:26px 18px;text-align:center;transition:background 0.25s;}
-.ts:hover{background:var(--surface2);}
-.ts-icon{font-size:22px;margin-bottom:9px;}
-.ts-val{font-size:24px;font-weight:700;color:var(--white);letter-spacing:-0.03em;margin-bottom:5px;}
-.ts-lbl{font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px;}
-.ts-sub{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);}
+.trust-sub{font-size:14px;color:var(--muted);line-height:1.8;}
+.tl-item{display:flex;gap:18px;margin-bottom:28px;}
+.tl-marker{display:flex;flex-direction:column;align-items:center;gap:0;flex-shrink:0;}
+.tl-circle{width:12px;height:12px;border-radius:50%;flex-shrink:0;}
+.tlg{background:var(--green);box-shadow:0 0 10px var(--green);}
+.tlc{background:var(--cyan);box-shadow:0 0 10px var(--cyan);}
+.tly{background:var(--yellow);box-shadow:0 0 10px var(--yellow);}
+.tl-vline{width:1px;flex:1;background:var(--border);margin:5px 0;}
+.tl-body{}
+.tl-yr{font-family:var(--font-mono);font-size:9px;color:var(--green);letter-spacing:0.1em;margin-bottom:4px;}
+.tl-hd{font-family:var(--font-display);font-size:14px;font-weight:700;color:var(--white);letter-spacing:-0.02em;margin-bottom:5px;}
+.tl-txt{font-size:12px;color:var(--muted);line-height:1.65;}
+
+.trust-nums{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:32px;}
+.tn-card{background:var(--surface2);border-radius:14px;padding:22px;text-align:center;}
+.tn-val{font-family:var(--font-display);font-size:32px;font-weight:800;letter-spacing:-0.05em;color:var(--white);}
+.tn-val em{font-style:normal;color:var(--green);}
+.tn-label{font-family:var(--font-mono);font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-top:5px;}
 
 /* FAQ */
-.faq-list{display:flex;flex-direction:column;gap:8px;max-width:700px;margin:56px auto 0;}
-.faq-item{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:border-color 0.25s;}
-.faq-item:hover{border-color:rgba(0,240,130,0.12);}
-.faq-item.open{border-color:rgba(0,240,130,0.18);}
-.faq-q{padding:22px 26px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-size:14px;font-weight:600;color:var(--white);user-select:none;}
-.faq-q:hover{color:var(--green);}
-.faq-icon{color:var(--muted);font-size:20px;transition:transform 0.3s,color 0.2s;flex-shrink:0;margin-left:16px;line-height:1;}
-.faq-item.open .faq-icon{transform:rotate(45deg);color:var(--green);}
-.faq-a{max-height:0;overflow:hidden;transition:max-height 0.4s ease,padding 0.3s;font-size:13px;color:var(--muted);line-height:1.75;padding:0 26px;}
-.faq-item.open .faq-a{max-height:220px;padding:0 26px 22px;}
+.faq-sec{max-width:720px;margin:0 auto;padding:0 24px 100px;position:relative;z-index:2;text-align:center;}
+.faq-list{margin-top:56px;text-align:left;}
+.faq-item{border-bottom:1px solid var(--border);transition:border-color 0.25s;}
+.faq-item:first-child{border-top:1px solid var(--border);}
+.faq-q{padding:22px 0;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-family:var(--font-display);font-size:14px;font-weight:700;color:var(--text);letter-spacing:-0.01em;user-select:none;transition:color 0.2s;}
+.faq-q:hover{color:var(--white);}
+.faq-toggle{font-size:22px;color:var(--muted);transition:transform 0.3s,color 0.2s;line-height:1;}
+.faq-item.open .faq-toggle{transform:rotate(45deg);color:var(--green);}
+.faq-a{max-height:0;overflow:hidden;transition:max-height 0.4s ease,padding 0.3s;font-size:13px;color:var(--muted);line-height:1.8;}
+.faq-item.open .faq-a{max-height:200px;padding-bottom:22px;}
 
-/* CTA */
-.cta{text-align:center;padding:100px 24px;position:relative;z-index:1;max-width:580px;margin:0 auto;}
-.cta h2{font-size:clamp(38px,6vw,66px);font-weight:700;letter-spacing:-0.045em;color:var(--white);line-height:0.95;margin-bottom:18px;}
-.cta h2 em{font-style:normal;background:linear-gradient(120deg,var(--green),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.cta p{font-size:16px;color:var(--muted);margin-bottom:44px;line-height:1.75;}
-.wa-btn{
-  display:inline-flex;align-items:center;gap:13px;background:var(--wa);color:white;text-decoration:none;
-  border-radius:14px;padding:20px 40px;font-size:17px;font-weight:700;
-  transition:all 0.25s;box-shadow:0 4px 30px rgba(37,211,102,0.2);
-}
-.wa-btn:hover{transform:translateY(-3px);box-shadow:0 10px 40px rgba(37,211,102,0.35);}
+/* CTA FINAL */
+.cta-final{text-align:center;padding:60px 24px 120px;position:relative;z-index:2;max-width:600px;margin:0 auto;}
+.cta-title{font-family:var(--font-display);font-size:clamp(44px,7vw,80px);font-weight:800;letter-spacing:-0.07em;color:var(--white);line-height:0.9;margin-bottom:22px;}
+.cta-title em{font-style:normal;background:linear-gradient(120deg,var(--green),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.cta-sub{font-size:15px;color:var(--muted);margin-bottom:48px;line-height:1.8;}
+.wa-cta{display:inline-flex;align-items:center;gap:14px;background:var(--wa);color:white;text-decoration:none;border-radius:16px;padding:20px 44px;font-family:var(--font-display);font-size:17px;font-weight:800;letter-spacing:-0.02em;transition:all 0.3s;position:relative;overflow:hidden;}
+.wa-cta::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.15),transparent);transform:translateX(-100%);transition:transform 0.6s;}
+.wa-cta:hover::before{transform:translateX(100%);}
+.wa-cta:hover{transform:translateY(-4px);box-shadow:0 16px 50px rgba(37,211,102,0.35);}
 
 /* FOOTER */
-footer{border-top:1px solid var(--border);padding:30px 36px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;position:relative;z-index:1;}
-.footer-logo{font-size:15px;font-weight:700;color:var(--white);}
+footer{border-top:1px solid var(--border);padding:28px 40px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;position:relative;z-index:2;}
+.footer-logo{font-family:var(--font-display);font-size:15px;font-weight:800;color:var(--white);letter-spacing:-0.03em;}
 .footer-logo em{font-style:normal;color:var(--green);}
-.footer-copy{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);}
-.footer-links{display:flex;gap:22px;}
+.footer-copy{font-family:var(--font-mono);font-size:9px;color:var(--muted);}
+.footer-links{display:flex;gap:24px;}
 .footer-links a{font-size:12px;color:var(--muted);text-decoration:none;transition:color 0.2s;}
 .footer-links a:hover{color:var(--green);}
 
-/* PROGRESS BAR */
-#prog{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,var(--green),var(--cyan),var(--purple));z-index:200;width:0;transition:width 0.08s;}
+/* STATUS BADGE */
+#status-badge{position:fixed;bottom:24px;right:24px;z-index:200;display:flex;align-items:center;gap:12px;background:rgba(8,12,18,0.95);border:1px solid var(--border);border-radius:16px;padding:14px 18px;min-width:220px;backdrop-filter:blur(24px);box-shadow:0 20px 60px rgba(0,0,0,0.8);animation:riseUp 0.6s 1.5s ease both;cursor:pointer;text-decoration:none;transition:all 0.3s;}
+#status-badge:hover{transform:translateY(-3px);}
+.sb-icon{width:40px;height:40px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:18px;position:relative;flex-shrink:0;}
+.sb-dot{position:absolute;bottom:-2px;right:-2px;width:10px;height:10px;border-radius:50%;border:2px solid rgba(8,12,18,0.95);}
+.sb-dot-g{background:var(--green);animation:livePulse 2s ease-in-out infinite;}
+.sb-dot-y{background:var(--yellow);}
+.sb-dot-r{background:#ff4d4d;}
+.sb-name{font-family:var(--font-display);font-size:12px;font-weight:700;color:var(--white);letter-spacing:-0.01em;}
+.sb-status{font-family:var(--font-mono);font-size:9px;font-weight:700;letter-spacing:0.06em;}
+.sb-g{color:var(--green);}.sb-y{color:var(--yellow);}.sb-r{color:#ff4d4d;}
+.sb-time{font-family:var(--font-mono);font-size:8px;color:var(--muted);margin-top:2px;}
+.sb-arrow{font-size:12px;color:var(--muted);margin-left:auto;}
 
-/* STATUS BANNER — clickable */
-.status-banner{
-  position:fixed;bottom:22px;right:22px;z-index:200;
-  background:rgba(8,10,18,0.96);border:1px solid var(--border);
-  border-radius:18px;padding:15px 20px;display:flex;align-items:center;gap:13px;
-  min-width:230px;box-shadow:0 16px 48px rgba(0,0,0,0.7);backdrop-filter:blur(24px);
-  animation:bannerIn 0.5s 1.2s ease both;
-  cursor:pointer;text-decoration:none;
-  transition:all 0.3s;overflow:hidden;
-}
-.status-banner::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,240,130,0.03),transparent);opacity:0;transition:opacity 0.3s;}
-.status-banner:hover::before{opacity:1;}
-.status-banner:hover{transform:translateY(-3px);box-shadow:0 20px 60px rgba(0,0,0,0.8);}
-.status-banner.online{border-color:rgba(0,240,130,0.18);}
-.status-banner.slow{border-color:rgba(247,204,68,0.18);}
-.status-banner.offline{border-color:rgba(255,60,80,0.12);}
-@keyframes bannerIn{from{opacity:0;transform:translateY(16px) scale(0.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+/* PROGRESS */
+#prog{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,var(--green),var(--cyan),var(--purple));z-index:300;width:0;transition:width 0.1s;}
 
-.s-ava{width:42px;height:42px;border-radius:12px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:18px;position:relative;flex-shrink:0;}
-.s-dot{position:absolute;bottom:-3px;right:-3px;width:11px;height:11px;border-radius:50%;border:2px solid rgba(8,10,18,0.96);}
-.s-dot.g{background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2s ease-in-out infinite;}
-.s-dot.y{background:var(--yellow);}
-.s-dot.r{background:#ff3c50;}
-.s-info{flex:1;min-width:0;}
-.s-name{font-size:13px;font-weight:700;color:var(--white);margin-bottom:2px;}
-.s-status{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:600;letter-spacing:0.06em;}
-.s-status.g{color:var(--green);}.s-status.y{color:var(--yellow);}.s-status.r{color:#ff3c50;}
-.s-time{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--muted);margin-top:2px;}
-.s-arrow{font-size:14px;color:var(--muted);transition:color 0.2s,transform 0.2s;flex-shrink:0;}
-.status-banner:hover .s-arrow{color:var(--green);transform:translateX(2px);}
-
-/* REVEAL ANIMATION */
-.reveal{opacity:0;transform:translateY(28px);transition:opacity 0.7s ease,transform 0.7s ease;}
+/* REVEAL */
+.reveal{opacity:0;transform:translateY(24px);transition:opacity 0.75s ease,transform 0.75s ease;}
 .reveal.visible{opacity:1;transform:translateY(0);}
-.reveal-delay-1{transition-delay:0.1s;}
-.reveal-delay-2{transition-delay:0.2s;}
-.reveal-delay-3{transition-delay:0.3s;}
+.rd1{transition-delay:0.1s;}.rd2{transition-delay:0.2s;}.rd3{transition-delay:0.3s;}
 
-/* GLOW CARDS on hover */
-.glow-on-hover{transition:all 0.3s;}
-.glow-on-hover:hover{box-shadow:0 0 30px rgba(0,240,130,0.07);}
-
-@media(max-width:800px){
-  .feat-grid{grid-template-columns:1fr;}.feat-card.wide{grid-column:span 1;}
-  .price-grid,.price-grid-2{grid-template-columns:1fr;}
-  .steps{grid-template-columns:1fr;}
-  .nums{grid-template-columns:repeat(2,1fr);margin:40px 20px;}
-  .trust-stats{grid-template-columns:repeat(2,1fr);}
-  .nav-right a:not(.nav-cta){display:none;}
-  .trust-box{padding:30px 22px;}
-  nav{padding:0 18px;}
-}
-@media(max-width:480px){
+@media(max-width:900px){
+  .bento-grid{grid-template-columns:1fr 1fr;}
+  .b-col-7,.b-col-5,.b-col-4,.b-col-8,.b-col-6,.b-col-12{grid-column:span 2;}
+  .b-col-4{grid-column:span 1;}
+  .price-wrap,.extend-row,.steps-grid{grid-template-columns:1fr;}
+  .trust-grid{grid-template-columns:1fr;}
+  .steps-grid::before{display:none;}
+  nav{padding:0 20px;}
+  .nav-links a:not(.nav-order){display:none;}
+  .trust-inner{padding:32px 22px;}
   footer{flex-direction:column;text-align:center;}
-  .status-banner{right:12px;bottom:12px;min-width:200px;}
 }
-
-/* shimmer effect on featured card */
-@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
-.shimmer-line{height:1px;background:linear-gradient(90deg,transparent,rgba(0,240,130,0.6),rgba(0,212,255,0.4),transparent);background-size:200% 100%;animation:shimmer 3s linear infinite;}
+@media(max-width:600px){
+  .bento-grid{grid-template-columns:1fr;}
+  .b-col-4{grid-column:span 1;}
+  .trust-nums{grid-template-columns:1fr 1fr;}
+  .float-cards{display:none;}
+}
 </style>
 </head>
 <body>
 
 <div id="prog"></div>
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
 
-<!-- floating orbs -->
-<div class="orb orb1"></div>
-<div class="orb orb2"></div>
-<div class="orb orb3"></div>
-
-<!-- floating particles -->
-<div class="particles" id="particles"></div>
+<div class="bg-mesh">
+  <div class="mesh-blob b1"></div>
+  <div class="mesh-blob b2"></div>
+  <div class="mesh-blob b3"></div>
+  <div class="mesh-blob b4"></div>
+</div>
+<div class="grid-bg"></div>
 
 <nav id="navbar">
   <a href="#" class="logo">
-    <div class="logo-icon">🤖</div>
-    Bocchi<em>BOT</em>
+    <div class="logo-mark">🤖</div>
+    <span class="logo-text">Bocchi<em>BOT</em></span>
   </a>
-  <div class="nav-right">
+  <div class="nav-links">
     <a href="#fitur">Fitur</a>
     <a href="#harga">Harga</a>
     <a href="#faq">FAQ</a>
-    <a href="#harga" class="nav-cta">🚀 Order Sekarang</a>
+    <a href="#harga" class="nav-order">Order ↗</a>
   </div>
 </nav>
 
+<!-- HERO -->
 <section class="hero">
-  <div class="hero-badge"><span class="live"></span> WA Bot · Aktif 24/7 · 373+ Commands</div>
-  <h1 class="hero-h">Bot WA<br><em>Serbaguna</em></h1>
-  <p class="hero-sub">Sticker, AI, download media, mini game, RPG, dan ratusan fitur lain — mulai Rp5K aja.</p>
-  <div class="hero-btns">
-    <a href="#harga" class="btn-main">🚀 Order Bot</a>
-    <a href="#fitur" class="btn-out">Lihat Fitur →</a>
+  <div class="hero-eyebrow">
+    <div class="eyebrow-pill"><span class="live-dot"></span> WA Bot · 373+ Commands · Aktif 24/7</div>
   </div>
-</section>
+  <h1 class="hero-headline">
+    <span class="headline-l1">Bot WA</span>
+    <span class="headline-l2">Serbaguna</span>
+    <span class="headline-l3">Mulai Rp5.000 aja</span>
+  </h1>
+  <p class="hero-desc">Sticker, AI Gemini, downloader, mini game, RPG, manajemen grup — <strong>ratusan fitur</strong> dalam satu bot yang nggak bakal bikin dompet nangis.</p>
+  <div class="hero-cta">
+    <a href="#harga" class="cta-primary">🚀 Order Sekarang</a>
+    <a href="#fitur" class="cta-secondary">Lihat Fitur →</a>
+  </div>
 
-<div class="strip">
-  <div class="strip-track">
-    <span class="strip-item"><span class="strip-dot">✦</span> Sticker & Ephoto</span>
-    <span class="strip-item"><span class="strip-dot">✦</span> AI Gemini & ChatGPT</span>
-    <span class="strip-item"><span class="strip-dot">✦</span> TikTok & YouTube DL</span>
-    <span class="strip-item"><span class="strip-dot">✦</span> Mini Games</span>
-    <span class="strip-item"><span class="strip-dot">✦</span> Sistem RPG</span>
-    <span class="strip-item"><span class="strip-dot">✦</span> Manajemen Grup</span>
-    <span class="strip-item"><span class="strip-dot">✦</span> 373+ Commands</span>
-    <span class="strip-item"><span class="strip-dot">✦</span> 16 Kategori</span>
-    <span class="strip-item"><span class="strip-dot">✦</span> Sticker & Ephoto</span>
-    <span class="strip-item"><span class="strip-dot">✦</span> AI Gemini & ChatGPT</span>
-    <span class="strip-item"><span class="strip-dot">✦</span> TikTok & YouTube DL</span>
-    <span class="strip-item"><span class="strip-dot">✦</span> Mini Games</span>
-    <span class="strip-item"><span class="strip-dot">✦</span> Sistem RPG</span>
-    <span class="strip-item"><span class="strip-dot">✦</span> Manajemen Grup</span>
-    <span class="strip-item"><span class="strip-dot">✦</span> 373+ Commands</span>
-    <span class="strip-item"><span class="strip-dot">✦</span> 16 Kategori</span>
-  </div>
-</div>
-
-<div class="nums reveal">
-  <div class="num-box">
-    <div class="num-val"><span class="counter" data-t="373">0</span><em>+</em></div>
-    <div class="num-lbl">Commands</div>
-  </div>
-  <div class="num-box">
-    <div class="num-val"><span class="counter" data-t="16">0</span></div>
-    <div class="num-lbl">Kategori</div>
-  </div>
-  <div class="num-box">
-    <div class="num-val">24/7</div>
-    <div class="num-lbl">Online</div>
-  </div>
-  <div class="num-box">
-    <div class="num-val"><em>Rp</em><span class="counter" data-t="5">0</span>K</div>
-    <div class="num-lbl">Mulai dari</div>
-  </div>
-</div>
-
-<section class="sec" id="fitur">
-  <div class="sec-tag">Fitur</div>
-  <h2 class="sec-title">Semua fitur anti error.</h2>
-  <p class="sec-sub">Dari download media sampai AI, dari game seru sampai RPG — semuanya dalam satu bot.</p>
-  <div class="feat-grid reveal">
-    <div class="feat-card wide glow-on-hover">
-      <span class="feat-icon">🖼️</span>
-      <div class="feat-name">Sticker & Ephoto — 30+ Efek</div>
-      <div class="feat-desc">Buat sticker dari foto/video/GIF, enhance dengan AI Remini, hapus background otomatis, dan edit foto dengan 30+ efek — neon, glitch, watercolor, vintage, dan lebih banyak lagi.</div>
-      <div class="tags"><span class="tag">sticker</span><span class="tag">remini</span><span class="tag">removebg</span><span class="tag">neonglitch</span><span class="tag">watercolor</span><span class="tag">vintage</span></div>
-    </div>
-    <div class="feat-card glow-on-hover">
-      <span class="feat-icon">🤖</span>
-      <div class="feat-name">AI — Gemini & ChatGPT</div>
-      <div class="feat-desc">Chat langsung dengan AI canggih di WhatsApp. Tanya apapun, translate, atau fetch konten dari URL.</div>
-      <div class="tags"><span class="tag c">gemini</span><span class="tag c">chatgpt</span><span class="tag c">translate</span><span class="tag c">fetch</span></div>
-    </div>
-    <div class="feat-card glow-on-hover">
-      <span class="feat-icon">🎬</span>
-      <div class="feat-name">Download Media</div>
-      <div class="feat-desc">Download video & audio dari TikTok, YouTube, Instagram, Facebook, Spotify — tanpa watermark!</div>
-      <div class="tags"><span class="tag y">tiktok</span><span class="tag y">ytmp4</span><span class="tag y">instagram</span><span class="tag y">spotifydl</span></div>
-    </div>
-    <div class="feat-card glow-on-hover">
-      <span class="feat-icon">🎮</span>
-      <div class="feat-name">Mini Games Seru</div>
-      <div class="feat-desc">Main bareng di grup! Tebak lagu, tebak gambar, catur, tictactoe, family 100, akinator, dan banyak lagi.</div>
-      <div class="tags"><span class="tag p">tictactoe</span><span class="tag p">catur</span><span class="tag p">tebaklagu</span><span class="tag p">akinator</span></div>
-    </div>
-    <div class="feat-card glow-on-hover">
-      <span class="feat-icon">🗡️</span>
-      <div class="feat-name">Sistem RPG Lengkap</div>
-      <div class="feat-desc">RPG dengan gacha, crafting, mining, leaderboard, inventory, casino, dan ekonomi virtual seru di grup.</div>
-      <div class="tags"><span class="tag y">gacha</span><span class="tag y">adventure</span><span class="tag y">craft</span><span class="tag y">casino</span></div>
-    </div>
-    <div class="feat-card glow-on-hover">
-      <span class="feat-icon">🛡️</span>
-      <div class="feat-name">Manajemen Grup</div>
-      <div class="feat-desc">Antilink, antidelete, welcome member, kick, tagall, absensi, dan fitur admin lengkap lainnya.</div>
-      <div class="tags"><span class="tag">antilink</span><span class="tag">welcome</span><span class="tag">tagall</span><span class="tag">absen</span></div>
+  <div class="hero-visual">
+    <div class="float-cards">
+      <div class="fcard"><div class="fcard-icon">🎬</div><div class="fcard-info"><div class="fcard-name">TikTok DL</div><div class="fcard-sub">No Watermark</div></div><span class="fcard-badge badge-g">Free</span></div>
+      <div class="fcard"><div class="fcard-icon">🤖</div><div class="fcard-info"><div class="fcard-name">AI Gemini</div><div class="fcard-sub">ChatGPT ready</div></div><span class="fcard-badge badge-c">Smart</span></div>
+      <div class="fcard"><div class="fcard-icon">🗡️</div><div class="fcard-info"><div class="fcard-name">Sistem RPG</div><div class="fcard-sub">Gacha + Craft</div></div><span class="fcard-badge badge-p">New</span></div>
     </div>
   </div>
 </section>
 
-<section class="sec" id="harga" style="padding-top:0;">
-  <div class="sec-tag">Harga</div>
-  <h2 class="sec-title">Pilih plan yang pas.</h2>
-  <p class="sec-sub">Klik tombol order → langsung chat owner di WhatsApp.</p>
-  <div style="text-align:center;">
-    <div class="slot-pill">
-      <span id="slot-dot" style="width:7px;height:7px;border-radius:50%;background:var(--muted);display:inline-block;"></span>
-      <span id="slot-text">Mengecek slot...</span>
-    </div>
+<!-- SCROLLING STATS BAR -->
+<div class="stats-bar">
+  <div class="stats-track">
+    <div class="stat-item"><div class="stat-num"><span>373</span>+</div><div class="stat-label">Commands</div></div>
+    <div class="stat-item"><div class="stat-num"><span>16</span></div><div class="stat-label">Kategori</div></div>
+    <div class="stat-item"><div class="stat-num">24/7</div><div class="stat-label">Online</div></div>
+    <div class="stat-item"><div class="stat-num">Rp<span>5</span>K</div><div class="stat-label">Mulai dari</div></div>
+    <div class="stat-item"><div class="stat-num"><span>3</span>+</div><div class="stat-label">Tahun aktif</div></div>
+    <div class="stat-item"><div class="stat-num"><span>10</span></div><div class="stat-label">Max slot</div></div>
+    <div class="stat-item"><div class="stat-num"><span>373</span>+</div><div class="stat-label">Commands</div></div>
+    <div class="stat-item"><div class="stat-num"><span>16</span></div><div class="stat-label">Kategori</div></div>
+    <div class="stat-item"><div class="stat-num">24/7</div><div class="stat-label">Online</div></div>
+    <div class="stat-item"><div class="stat-num">Rp<span>5</span>K</div><div class="stat-label">Mulai dari</div></div>
+    <div class="stat-item"><div class="stat-num"><span>3</span>+</div><div class="stat-label">Tahun aktif</div></div>
+    <div class="stat-item"><div class="stat-num"><span>10</span></div><div class="stat-label">Max slot</div></div>
   </div>
-  <div class="price-grid reveal" style="margin-top:44px;">
-    <div class="price-card glow-on-hover">
-      <div class="price-plan">Sewa Reguler</div>
-      <div class="price-val"><sup>Rp</sup>10K</div>
-      <div class="price-period">per bulan · per grup</div>
-      <div class="price-divider"></div>
-      <ul class="price-feats">
-        <li><span class="pcheck g">✓</span> Semua fitur umum</li>
-        <li><span class="pcheck g">✓</span> Sticker, AI, Download Media</li>
-        <li><span class="pcheck g">✓</span> Mini Games & RPG</li>
-        <li><span class="pcheck g">✓</span> Manajemen Grup</li>
-        <li><span class="pcheck g">✓</span> Ephoto 30+ efek</li>
-        <li class="dim"><span class="pcheck x">✗</span> Fitur NSFW (18+)</li>
-      </ul>
-      <a href="https://wa.me/6285801573242?text=Halo%20min%2C%20mau%20order%20*Sewa%20Reguler*%20BocchiBOT%20(Rp10.000%2F30%20hari)%20dong!" class="price-btn ghost" target="_blank">Order via WhatsApp →</a>
-    </div>
-    <div class="price-card featured glow-on-hover">
-      <div class="shimmer-line" style="position:absolute;top:0;left:0;right:0;"></div>
-      <div class="price-badge g">🔥 Terlengkap</div>
-      <div class="price-plan">Sewa + Upgrade Premium</div>
-      <div class="price-val"><sup>Rp</sup>15K</div>
-      <div class="price-period">per bulan · grup + user</div>
-      <div class="price-divider"></div>
-      <ul class="price-feats">
-        <li><span class="pcheck g">✓</span> Semua fitur Reguler</li>
-        <li><span class="pcheck g">✓</span> Sticker, AI, Download</li>
-        <li><span class="pcheck g">✓</span> Games, RPG, Ephoto</li>
-        <li><span class="pcheck g">✓</span> Manajemen Grup Pro</li>
-        <li><span class="pcheck y">★</span> <span style="color:var(--yellow);font-weight:700">Full akses NSFW (18+)</span></li>
-        <li><span class="pcheck c">✓</span> <span style="color:var(--cyan);">Paket paling hemat!</span></li>
-      </ul>
-      <a href="https://wa.me/6285801573242?text=Halo%20min%2C%20mau%20order%20*Paket%20Bundle%20Sewa%20%2B%20Upgrade%20Premium*%20BocchiBOT%20(Rp15.000%2F30%20hari)%20dong!" class="price-btn g" target="_blank">Order via WhatsApp →</a>
-    </div>
-    <div class="price-card yellow-card glow-on-hover">
-      <div class="price-badge y">⚡ Hemat</div>
-      <div class="price-plan">Paket Hemat</div>
-      <div class="price-val"><sup>Rp</sup>5K</div>
-      <div class="price-period">15 hari · per grup</div>
-      <div class="price-divider"></div>
-      <ul class="price-feats">
-        <li><span class="pcheck g">✓</span> Semua fitur umum</li>
-        <li><span class="pcheck g">✓</span> Sticker, AI, Download</li>
-        <li><span class="pcheck g">✓</span> Mini Games & RPG</li>
-        <li><span class="pcheck g">✓</span> Manajemen Grup</li>
-        <li><span class="pcheck g">✓</span> Ephoto 30+ efek</li>
-        <li class="dim"><span class="pcheck x">✗</span> Fitur NSFW (18+)</li>
-      </ul>
-      <a href="https://wa.me/6285801573242?text=Halo%20min%2C%20mau%20order%20*Paket%20Hemat*%20BocchiBOT%20(Rp5.000%2F15%20hari)%20dong!" class="price-btn y" target="_blank">Order via WhatsApp →</a>
-    </div>
+</div>
+
+<!-- FEATURES BENTO -->
+<section class="bento-sec" id="fitur">
+  <div class="section-header reveal">
+    <div class="s-tag">Fitur</div>
+    <h2 class="s-title">Semua dalam<br>satu bot.</h2>
+    <p class="s-sub">Bukan bot kaleng-kaleng — ini bot yang beneran kerja dari 2023 sampai sekarang.</p>
   </div>
-  <div class="price-grid-2 reveal">
-    <div class="price-card cyan-card glow-on-hover">
-      <div class="price-badge c">✦ Add-On</div>
-      <div class="price-plan">Upgrade Premium</div>
-      <div class="price-val"><sup>Rp</sup>5K</div>
-      <div class="price-period">per bulan · per user</div>
-      <div class="price-divider"></div>
-      <div class="price-req">🔒 Syarat: sewa aktif ≥ 15 hari tersisa</div>
-      <ul class="price-feats">
-        <li><span class="pcheck c">✓</span> Akses pribadi per user</li>
-        <li><span class="pcheck y">★</span> <span style="color:var(--yellow);font-weight:700">Full akses NSFW (18+)</span></li>
-        <li><span class="pcheck c">✓</span> Sticker, AI, Download</li>
-        <li class="dim"><span class="pcheck x">✗</span> Tidak bisa tanpa sewa aktif</li>
-      </ul>
-      <a href="https://wa.me/6285801573242?text=Halo%20min%2C%20mau%20order%20*Upgrade%20Premium*%20BocchiBOT%20(Rp5.000%2F30%20hari)%20dong!" class="price-btn c" target="_blank">Order via WhatsApp →</a>
+  <div class="bento-grid reveal">
+    <!-- Big: Sticker -->
+    <div class="bento b-col-7">
+      <span class="bento-emoji">🖼️</span>
+      <div class="bento-title">Sticker & Ephoto — 30+ Efek</div>
+      <div class="bento-desc">Buat sticker dari foto/video/GIF, enhance AI Remini, hapus background, dan edit foto dengan 30+ efek — neon, glitch, watercolor, vintage, dan masih banyak lagi.</div>
+      <div class="bento-tags"><span class="btag btag-g">sticker</span><span class="btag btag-g">remini</span><span class="btag btag-g">removebg</span><span class="btag btag-g">neon</span><span class="btag btag-g">glitch</span><span class="btag btag-g">watercolor</span></div>
     </div>
-    <div class="price-card glow-on-hover" style="display:flex;flex-direction:column;justify-content:center;gap:18px;">
-      <div style="font-size:30px;">📱</div>
-      <div>
-        <div style="font-size:16px;font-weight:700;color:var(--white);margin-bottom:14px;">Cara Order Gampang!</div>
-        <div style="font-size:13px;color:var(--muted);line-height:2;">
-          <span style="color:var(--green);font-weight:700;">01.</span> Klik tombol <strong style="color:var(--white);">Order via WhatsApp</strong><br>
-          <span style="color:var(--green);font-weight:700;">02.</span> Pesan otomatis terisi — tinggal kirim<br>
-          <span style="color:var(--green);font-weight:700;">03.</span> Owner konfirmasi &amp; bot aktif! 🚀
-        </div>
+    <!-- Counter -->
+    <div class="bento b-col-5 bento-counter">
+      <div class="counter-num">373<span style="color:var(--green);font-size:0.5em;vertical-align:super;">+</span></div>
+      <div class="counter-label">Total Commands</div>
+    </div>
+    <!-- AI -->
+    <div class="bento b-col-5">
+      <span class="bento-emoji">🤖</span>
+      <div class="bento-title">AI — Gemini & ChatGPT</div>
+      <div class="bento-desc">Chat langsung dengan AI canggih. Tanya apapun, translate, atau fetch konten dari URL.</div>
+      <div class="bento-tags"><span class="btag btag-c">gemini</span><span class="btag btag-c">chatgpt</span><span class="btag btag-c">translate</span><span class="btag btag-c">fetch</span></div>
+    </div>
+    <!-- Download -->
+    <div class="bento b-col-4">
+      <span class="bento-emoji">🎬</span>
+      <div class="bento-title">Download Media</div>
+      <div class="bento-desc">TikTok, YouTube, Instagram, Facebook, Spotify — tanpa watermark!</div>
+      <div class="bento-tags"><span class="btag btag-y">tiktok</span><span class="btag btag-y">youtube</span><span class="btag btag-y">spotify</span></div>
+    </div>
+    <!-- Terminal -->
+    <div class="bento b-col-3">
+      <div class="terminal">
+        <div class="term-bar"><div class="term-dot td1"></div><div class="term-dot td2"></div><div class="term-dot td3"></div></div>
+        <div class="term-line"><span class="tc-muted">$</span> <span class="tc-green">.sticker</span></div>
+        <div class="term-line"><span class="tc-cyan">✓ Creating sticker...</span></div>
+        <div class="term-line"><span class="tc-muted">$</span> <span class="tc-green">.ai</span> <span class="tc-white">apa itu RPG?</span></div>
+        <div class="term-line"><span class="tc-yellow">⚡ Gemini responding...</span></div>
+        <div class="term-line"><span class="tc-muted">$</span> <span class="tc-white blink">_</span></div>
       </div>
-      <a href="https://wa.me/6285801573242?text=Halo%20min%2C%20mau%20tanya%20BocchiBOT!" class="price-btn ghost" style="margin-top:auto;" target="_blank">Tanya Owner →</a>
+    </div>
+    <!-- Games -->
+    <div class="bento b-col-4">
+      <span class="bento-emoji">🎮</span>
+      <div class="bento-title">Mini Games Seru</div>
+      <div class="bento-desc">Tebak lagu, tebak gambar, catur, tictactoe, family 100, akinator, dan banyak lagi.</div>
+      <div class="bento-tags"><span class="btag btag-p">tictactoe</span><span class="btag btag-p">catur</span><span class="btag btag-p">akinator</span></div>
+    </div>
+    <!-- RPG -->
+    <div class="bento b-col-5">
+      <span class="bento-emoji">🗡️</span>
+      <div class="bento-title">Sistem RPG Lengkap</div>
+      <div class="bento-desc">Gacha, crafting, mining, leaderboard, inventory, casino, dan ekonomi virtual seru di grup kamu.</div>
+      <div class="bento-tags"><span class="btag btag-y">gacha</span><span class="btag btag-y">adventure</span><span class="btag btag-y">craft</span><span class="btag btag-y">casino</span></div>
+    </div>
+    <!-- Group Mgmt -->
+    <div class="bento b-col-3">
+      <span class="bento-emoji">🛡️</span>
+      <div class="bento-title">Manajemen Grup</div>
+      <div class="bento-desc">Antilink, antidelete, welcome, kick, tagall, absen.</div>
+      <div class="bento-tags"><span class="btag btag-pk">antilink</span><span class="btag btag-pk">welcome</span><span class="btag btag-pk">tagall</span></div>
+    </div>
+    <!-- Chip cloud -->
+    <div class="bento b-col-12">
+      <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:12px;">Contoh commands</div>
+      <div class="chip-cloud">
+        <span class="chip">.sticker</span><span class="chip">.remini</span><span class="chip">.ai</span><span class="chip">.tiktok</span><span class="chip">.ytmp4</span><span class="chip">.catur</span><span class="chip">.gacha</span><span class="chip">.antilink</span><span class="chip">.kick</span><span class="chip">.tagall</span><span class="chip">.absen</span><span class="chip">.translate</span><span class="chip">.removebg</span><span class="chip">.tebaksong</span><span class="chip">.bet</span><span class="chip">.craft</span><span class="chip">.adventure</span><span class="chip">.spotify</span><span class="chip">.akinator</span><span class="chip">.neon</span><span class="chip">.glitch</span><span class="chip">.fetch</span><span class="chip">.mining</span><span class="chip">.leaderboard</span><span class="chip">.welcome</span>
+      </div>
     </div>
   </div>
 </section>
 
-<section class="sec" id="cara" style="padding-top:0;">
-  <div class="sec-tag" style="justify-content:center;">Cara Order</div>
-  <h2 class="sec-title" style="text-align:center;">Tiga langkah, bot siap jalan.</h2>
-  <div class="steps reveal">
-    <div class="step">
-      <div class="step-n">01</div>
-      <span class="step-icon">🎯</span>
+<!-- PRICING -->
+<section class="pricing-sec" id="harga">
+  <div class="section-header reveal">
+    <div class="s-tag">Harga</div>
+    <h2 class="s-title">Pilih plan<br>yang pas.</h2>
+    <p class="s-sub">Klik order → pesan otomatis terisi → tinggal kirim.</p>
+  </div>
+  <div class="slot-row">
+    <div class="slot-pill" id="slot-pill">
+      <span id="slot-dot" style="width:7px;height:7px;border-radius:50%;background:var(--muted);display:inline-block;"></span>
+      <span id="slot-text" style="color:var(--muted);">Mengecek slot...</span>
+    </div>
+  </div>
+  <div class="price-wrap reveal" style="margin-top:32px;">
+    <div class="pc">
+      <div class="pc-plan">Sewa Reguler</div>
+      <div class="pc-price"><sup>Rp</sup>10K</div>
+      <div class="pc-period">per bulan · per grup</div>
+      <div class="pc-line"></div>
+      <ul class="pc-feats">
+        <li><span class="ck ckg">✓</span> Semua fitur umum</li>
+        <li><span class="ck ckg">✓</span> Sticker, AI, Download Media</li>
+        <li><span class="ck ckg">✓</span> Mini Games & RPG</li>
+        <li><span class="ck ckg">✓</span> Manajemen Grup</li>
+        <li><span class="ck ckg">✓</span> Ephoto 30+ efek</li>
+        <li class="dim"><span class="ck ckx">✗</span> Fitur NSFW (18+)</li>
+      </ul>
+      <a href="https://wa.me/6285801573242?text=Halo%20min%2C%20mau%20order%20*Sewa%20Reguler*%20BocchiBOT%20(Rp10.000%2F30%20hari)%20dong!" class="pc-btn pb-ghost" target="_blank">Order via WhatsApp →</a>
+    </div>
+    <div class="pc featured">
+      <div class="pc-badge pbg">🔥 Terlengkap</div>
+      <div class="pc-plan">Sewa + Upgrade Premium</div>
+      <div class="pc-price"><sup>Rp</sup>15K</div>
+      <div class="pc-period">per bulan · grup + user</div>
+      <div class="pc-line"></div>
+      <ul class="pc-feats">
+        <li><span class="ck ckg">✓</span> Semua fitur Reguler</li>
+        <li><span class="ck ckg">✓</span> Sticker, AI, Download</li>
+        <li><span class="ck ckg">✓</span> Games, RPG, Ephoto</li>
+        <li><span class="ck ckg">✓</span> Manajemen Grup Pro</li>
+        <li><span class="ck cky">★</span> <span style="color:var(--yellow);font-weight:700;">Full akses NSFW (18+)</span></li>
+        <li><span class="ck ckc">✓</span> <span style="color:var(--cyan);">Paket paling hemat!</span></li>
+      </ul>
+      <a href="https://wa.me/6285801573242?text=Halo%20min%2C%20mau%20order%20*Paket%20Bundle%20Sewa%20%2B%20Upgrade%20Premium*%20BocchiBOT%20(Rp15.000%2F30%20hari)%20dong!" class="pc-btn pb-g" target="_blank">Order via WhatsApp →</a>
+    </div>
+    <div class="pc warm">
+      <div class="pc-badge pby">⚡ Hemat</div>
+      <div class="pc-plan">Paket Hemat</div>
+      <div class="pc-price"><sup>Rp</sup>5K</div>
+      <div class="pc-period">15 hari · per grup</div>
+      <div class="pc-line"></div>
+      <ul class="pc-feats">
+        <li><span class="ck ckg">✓</span> Semua fitur umum</li>
+        <li><span class="ck ckg">✓</span> Sticker, AI, Download</li>
+        <li><span class="ck ckg">✓</span> Mini Games & RPG</li>
+        <li><span class="ck ckg">✓</span> Manajemen Grup</li>
+        <li><span class="ck ckg">✓</span> Ephoto 30+ efek</li>
+        <li class="dim"><span class="ck ckx">✗</span> Fitur NSFW (18+)</li>
+      </ul>
+      <a href="https://wa.me/6285801573242?text=Halo%20min%2C%20mau%20order%20*Paket%20Hemat*%20BocchiBOT%20(Rp5.000%2F15%20hari)%20dong!" class="pc-btn pb-y" target="_blank">Order via WhatsApp →</a>
+    </div>
+  </div>
+
+  <!-- EXTEND & ADD-ON -->
+  <div style="margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:12px;" class="reveal">
+    <div class="pc cool" style="padding:28px;">
+      <div class="pc-badge pbc">✦ Add-On</div>
+      <div class="pc-plan">Upgrade Premium</div>
+      <div class="pc-price" style="font-size:46px;"><sup>Rp</sup>5K</div>
+      <div class="pc-period">per bulan · per user</div>
+      <div class="pc-line"></div>
+      <div style="display:inline-flex;align-items:center;gap:7px;background:rgba(0,229,255,0.06);border:1px solid rgba(0,229,255,0.13);border-radius:7px;padding:6px 11px;margin-bottom:16px;font-family:var(--font-mono);font-size:9px;color:var(--cyan);">🔒 Butuh sewa aktif ≥ 15 hari</div>
+      <ul class="pc-feats">
+        <li><span class="ck ckc">✓</span> Akses pribadi per user</li>
+        <li><span class="ck cky">★</span> <span style="color:var(--yellow);font-weight:700;">Full akses NSFW (18+)</span></li>
+        <li class="dim"><span class="ck ckx">✗</span> Tidak bisa tanpa sewa aktif</li>
+      </ul>
+      <a href="https://wa.me/6285801573242?text=Halo%20min%2C%20mau%20order%20*Upgrade%20Premium*%20BocchiBOT%20(Rp5.000%2F30%20hari)%20dong!" class="pc-btn pb-c" target="_blank">Order via WhatsApp →</a>
+    </div>
+    <div class="pc" style="padding:28px;display:flex;flex-direction:column;gap:10px;">
+      <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;">Perpanjang sewa</div>
+      <a href="https://wa.me/6285801573242?text=Halo%20min%2C%20mau%20order%20*Extend7*%20BocchiBOT%20(Rp4.000%2F7%20hari)%20dong!" target="_blank" class="ext-card" style="text-decoration:none;display:flex;align-items:center;justify-content:space-between;">
+        <div><div class="ext-name">Extend 7</div><div class="ext-days">+7 hari</div></div>
+        <div style="text-align:right;"><div class="ext-price">Rp4K</div><div style="font-family:var(--font-mono);font-size:8px;color:var(--muted);">Order →</div></div>
+      </a>
+      <a href="https://wa.me/6285801573242?text=Halo%20min%2C%20mau%20order%20*Extend14*%20BocchiBOT%20(Rp7.000%2F14%20hari)%20dong!" target="_blank" class="ext-card" style="text-decoration:none;display:flex;align-items:center;justify-content:space-between;">
+        <div><div class="ext-name">Extend 14</div><div class="ext-days">+14 hari</div></div>
+        <div style="text-align:right;"><div class="ext-price">Rp7K</div><div style="font-family:var(--font-mono);font-size:8px;color:var(--muted);">Order →</div></div>
+      </a>
+      <a href="https://wa.me/6285801573242?text=Halo%20min%2C%20mau%20order%20*Extend30*%20BocchiBOT%20(Rp10.000%2F30%20hari)%20dong!" target="_blank" class="ext-card" style="text-decoration:none;display:flex;align-items:center;justify-content:space-between;">
+        <div><div class="ext-name">Extend 30</div><div class="ext-days">+30 hari</div></div>
+        <div style="text-align:right;"><div class="ext-price">Rp10K</div><div style="font-family:var(--font-mono);font-size:8px;color:var(--muted);">Order →</div></div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- STEPS -->
+<section class="steps-sec" id="cara">
+  <div class="section-header reveal" style="text-align:center;">
+    <div class="s-tag" style="justify-content:center;">Cara Order</div>
+    <h2 class="s-title" style="text-align:center;">Tiga langkah.<br>Bot jalan.</h2>
+  </div>
+  <div class="steps-grid reveal">
+    <div class="step-card">
+      <div class="step-num-wrap"><div class="step-num sn1">01</div></div>
       <div class="step-title">Pilih Paket</div>
-      <div class="step-desc">Pilih paket yang sesuai kebutuhan dan budget kamu dari tabel harga di atas.</div>
+      <div class="step-desc">Pilih paket sesuai kebutuhan dan budget dari tabel harga di atas.</div>
     </div>
-    <div class="step" style="border-left:1px solid var(--border);border-right:1px solid var(--border);">
-      <div class="step-n">02</div>
-      <span class="step-icon">💬</span>
+    <div class="step-card">
+      <div class="step-num-wrap"><div class="step-num sn2">02</div></div>
       <div class="step-title">Chat Owner</div>
-      <div class="step-desc">Klik tombol order, pesan otomatis langsung terisi — tinggal kirim ke owner via WhatsApp.</div>
+      <div class="step-desc">Klik tombol order — pesan otomatis sudah terisi, tinggal kirim ke owner.</div>
     </div>
-    <div class="step">
-      <div class="step-n">03</div>
-      <span class="step-icon">🚀</span>
+    <div class="step-card">
+      <div class="step-num-wrap"><div class="step-num sn3">03</div></div>
       <div class="step-title">Bot Aktif!</div>
       <div class="step-desc">Setelah konfirmasi pembayaran, bot langsung diaktifkan di grup kamu.</div>
     </div>
   </div>
 </section>
 
-<section class="sec" id="trust" style="padding-bottom:0;">
-  <div class="trust-box reveal">
-    <div class="trust-badges">
-      <span class="trust-badge g">✦ Bukan Bot Kaleng-Kaleng</span>
-      <span class="trust-badge y">⚡ Aktif Sejak 2023</span>
-      <span class="trust-badge c">🛠 Terus Dikembangkan</span>
+<!-- TRUST -->
+<section class="trust-sec" id="trust">
+  <div class="trust-inner reveal">
+    <div class="trust-grid">
+      <div>
+        <div class="s-tag">Kenapa percaya kami</div>
+        <h2 class="trust-title">3 Tahun<br><em>Masih Kencang.</em></h2>
+        <p class="trust-sub" style="margin-bottom:36px;">BocchiBOT bukan proyek iseng yang hilang bulan depan. Sudah aktif sejak 2023 dengan update fitur rutin dan respons error yang cepat.</p>
+        <div class="timeline">
+          <div class="tl-item">
+            <div class="tl-marker"><div class="tl-circle tlg"></div><div class="tl-vline"></div></div>
+            <div class="tl-body"><div class="tl-yr">2023</div><div class="tl-hd">Lahir & Mulai Jalan</div><div class="tl-txt">Diluncurkan dengan fitur dasar — sticker, downloader, manajemen grup sederhana.</div></div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-marker"><div class="tl-circle tlc"></div><div class="tl-vline"></div></div>
+            <div class="tl-body"><div class="tl-yr">2024</div><div class="tl-hd">Ekspansi Besar-Besaran</div><div class="tl-txt">Integrasi AI (Gemini & ChatGPT), sistem RPG lengkap, mini games, ratusan command baru.</div></div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-marker"><div class="tl-circle tly"></div></div>
+            <div class="tl-body"><div class="tl-yr">2025–2026</div><div class="tl-hd">Masih Aktif & Terus Update</div><div class="tl-txt">373+ commands, 16 kategori, fix error instan, penambahan fitur rutin. Owner standby.</div></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="trust-nums">
+          <div class="tn-card"><div class="tn-val">3<em>+</em></div><div class="tn-label">Tahun Aktif</div></div>
+          <div class="tn-card"><div class="tn-val" style="color:var(--cyan);">Fast</div><div class="tn-label">Fix Error</div></div>
+          <div class="tn-card"><div class="tn-val" style="color:var(--yellow);">Rutin</div><div class="tn-label">Update Fitur</div></div>
+          <div class="tn-card"><div class="tn-val" style="color:var(--purple);">Real</div><div class="tn-label">Owner Manusia</div></div>
+        </div>
+        <div style="margin-top:20px;background:var(--surface2);border-radius:14px;padding:22px;border:1px solid var(--border);">
+          <div style="font-family:var(--font-mono);font-size:9px;color:var(--green);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px;">Metode pembayaran</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;">
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text);background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:5px 12px;">Transfer Bank</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text);background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:5px 12px;">DANA</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text);background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:5px 12px;">GoPay</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text);background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:5px 12px;">OVO</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text);background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:5px 12px;">& lainnya</span>
+          </div>
+        </div>
+      </div>
     </div>
-    <h2 class="trust-title">3 Tahun Berjalan,<br><em>Masih Kencang.</em></h2>
-    <p class="trust-desc">BocchiBOT bukan proyek iseng yang bakal kabur bulan depan. Sudah aktif sejak <strong style="color:var(--white);">2023</strong> dan terus berjalan sampai sekarang — dengan penambahan fitur rutin dan fix error yang cepat.</p>
-    <div class="timeline">
-      <div class="tl">
-        <div class="tl-left"><div class="tl-dot g"></div><div class="tl-line"></div></div>
-        <div class="tl-content">
-          <div class="tl-year">2023</div>
-          <div class="tl-title-txt">Lahir & Mulai Jalan</div>
-          <div class="tl-desc-txt">BocchiBOT pertama kali diluncurkan dengan fitur dasar — sticker, downloader, dan manajemen grup sederhana.</div>
-        </div>
-      </div>
-      <div class="tl">
-        <div class="tl-left"><div class="tl-dot c"></div><div class="tl-line"></div></div>
-        <div class="tl-content">
-          <div class="tl-year">2024</div>
-          <div class="tl-title-txt">Ekspansi Besar-Besaran</div>
-          <div class="tl-desc-txt">Integrasi AI (Gemini & ChatGPT), sistem RPG lengkap, mini games, dan ratusan command baru ditambahkan.</div>
-        </div>
-      </div>
-      <div class="tl">
-        <div class="tl-left"><div class="tl-dot y"></div></div>
-        <div class="tl-content">
-          <div class="tl-year">2025–2026</div>
-          <div class="tl-title-txt">Masih Aktif & Terus Update</div>
-          <div class="tl-desc-txt">373+ commands, 16 kategori, fix error instan, dan penambahan fitur baru secara berkala. Owner masih standby.</div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="trust-stats reveal">
-    <div class="ts"><div class="ts-icon">🏆</div><div class="ts-val">3+</div><div class="ts-lbl">Tahun Aktif</div><div class="ts-sub">2023 → sekarang</div></div>
-    <div class="ts"><div class="ts-icon">🔧</div><div class="ts-val">Fast</div><div class="ts-lbl">Fix Error</div><div class="ts-sub">Lapor → langsung difix</div></div>
-    <div class="ts"><div class="ts-icon">📦</div><div class="ts-val">Rutin</div><div class="ts-lbl">Update Fitur</div><div class="ts-sub">Terus berkembang</div></div>
-    <div class="ts"><div class="ts-icon">💬</div><div class="ts-val">Real</div><div class="ts-lbl">Owner Manusia</div><div class="ts-sub">Bukan bot auto-reply</div></div>
   </div>
 </section>
 
-<section class="sec" id="faq">
-  <div class="sec-tag" style="justify-content:center;">FAQ</div>
-  <h2 class="sec-title" style="text-align:center;">Pertanyaan yang sering ditanya</h2>
+<!-- FAQ -->
+<section class="faq-sec" id="faq">
+  <div class="section-header reveal">
+    <div class="s-tag" style="justify-content:center;">FAQ</div>
+    <h2 class="s-title">Pertanyaan<br>yang sering muncul.</h2>
+  </div>
   <div class="faq-list reveal">
     <div class="faq-item">
-      <div class="faq-q" onclick="toggleFaq(this)"><span>Ini beneran bukan bot kaleng-kaleng? Bisa tiba-tiba hilang?</span><span class="faq-icon">+</span></div>
-      <div class="faq-a">BocchiBOT sudah aktif sejak <strong style="color:var(--green);">2023</strong> — sampai 2026 masih kuat. Bukan proyek coba-coba. Owner aktif, update rutin jalan terus. Error langsung direspon dan difix.</div>
+      <div class="faq-q" onclick="toggleFaq(this)"><span>Ini beneran bukan bot kaleng-kaleng?</span><span class="faq-toggle">+</span></div>
+      <div class="faq-a">BocchiBOT sudah aktif sejak 2023 — sampai 2026 masih kuat. Bukan proyek coba-coba. Owner aktif, update rutin, error langsung direspon dan difix.</div>
     </div>
     <div class="faq-item">
-      <div class="faq-q" onclick="toggleFaq(this)"><span>Apakah fitur bakal terus diupdate?</span><span class="faq-icon">+</span></div>
-      <div class="faq-a">Terus diupdate! Sejak 2023 sudah ratusan fitur ditambahkan — dari downloader dan sticker, sekarang ada AI Gemini, RPG, 30+ efek ephoto, mini games. Owner aktif nambahin fitur berdasarkan request.</div>
+      <div class="faq-q" onclick="toggleFaq(this)"><span>Apakah fitur bakal terus diupdate?</span><span class="faq-toggle">+</span></div>
+      <div class="faq-a">Terus diupdate! Sejak 2023 sudah ratusan fitur ditambahkan. Owner aktif nambahin fitur berdasarkan request pengguna.</div>
     </div>
     <div class="faq-item">
-      <div class="faq-q" onclick="toggleFaq(this)"><span>Kalau ada error, gimana?</span><span class="faq-icon">+</span></div>
-      <div class="faq-a">Lapor langsung ke owner via WhatsApp, dan error akan difix secepat mungkin. Owner manusia nyata, bukan bot auto-reply. Fix bisa dalam hitungan jam bahkan menit untuk bug kritis.</div>
+      <div class="faq-q" onclick="toggleFaq(this)"><span>Kalau ada error, gimana?</span><span class="faq-toggle">+</span></div>
+      <div class="faq-a">Lapor langsung ke owner via WhatsApp, error difix secepat mungkin. Owner manusia nyata, bukan bot auto-reply. Bug kritis bisa difix dalam hitungan menit.</div>
     </div>
     <div class="faq-item">
-      <div class="faq-q" onclick="toggleFaq(this)"><span>Berapa lama proses aktivasi?</span><span class="faq-icon">+</span></div>
+      <div class="faq-q" onclick="toggleFaq(this)"><span>Berapa lama proses aktivasi?</span><span class="faq-toggle">+</span></div>
       <div class="faq-a">Biasanya kurang dari 10 menit setelah pembayaran dikonfirmasi. Owner fast respon di jam aktif.</div>
     </div>
     <div class="faq-item">
-      <div class="faq-q" onclick="toggleFaq(this)"><span>Apa itu Upgrade Premium? Bedanya apa dengan Sewa biasa?</span><span class="faq-icon">+</span></div>
-      <div class="faq-a">Sewa = langganan per-grup yang mengaktifkan bot. Upgrade Premium = add-on per-user yang membuka fitur NSFW (18+), berlaku di grup manapun. Butuh sewa aktif minimal 15 hari tersisa.</div>
+      <div class="faq-q" onclick="toggleFaq(this)"><span>Apa itu Upgrade Premium? Bedanya apa?</span><span class="faq-toggle">+</span></div>
+      <div class="faq-a">Sewa = langganan per-grup yang mengaktifkan bot. Upgrade Premium = add-on per-user yang membuka fitur NSFW (18+). Butuh sewa aktif minimal 15 hari tersisa.</div>
     </div>
     <div class="faq-item">
-      <div class="faq-q" onclick="toggleFaq(this)"><span>Metode pembayaran apa yang diterima?</span><span class="faq-icon">+</span></div>
+      <div class="faq-q" onclick="toggleFaq(this)"><span>Metode pembayaran apa yang diterima?</span><span class="faq-toggle">+</span></div>
       <div class="faq-a">Transfer bank, DANA, GoPay, OVO, dan berbagai metode lain. Konfirmasi dengan owner saat order.</div>
     </div>
   </div>
 </section>
 
-<section class="cta">
+<!-- CTA FINAL -->
+<section class="cta-final">
   <div class="reveal">
-    <h2>Siap pakai<br><em>BocchiBOT?</em></h2>
-    <p>Hubungi owner sekarang via WhatsApp untuk order atau tanya-tanya.</p>
-    <a href="https://wa.me/6285801573242?text=Halo%20min%2C%20mau%20tanya%20tentang%20BocchiBOT!" class="wa-btn" target="_blank">📱 Chat Owner Sekarang</a>
+    <h2 class="cta-title">Siap pakai<br><em>BocchiBOT?</em></h2>
+    <p class="cta-sub">Hubungi owner sekarang via WhatsApp untuk order atau tanya-tanya.</p>
+    <a href="https://wa.me/6285801573242?text=Halo%20min%2C%20mau%20tanya%20tentang%20BocchiBOT!" class="wa-cta" target="_blank">📱 Chat Owner Sekarang</a>
   </div>
 </section>
 
@@ -673,128 +695,112 @@ footer{border-top:1px solid var(--border);padding:30px 36px;display:flex;align-i
   </div>
 </footer>
 
-<!-- STATUS BANNER — klik → WA owner -->
-<a class="status-banner" id="statusBanner" href="https://wa.me/6285801573242?text=Halo%20min!" target="_blank">
-  <div class="s-ava">👤<span class="s-dot" id="sDot"></span></div>
-  <div class="s-info">
-    <div class="s-name">Owner BocchiBOT</div>
-    <div class="s-status" id="sLabel">Memuat...</div>
-    <div class="s-time" id="sTime"></div>
+<a id="status-badge" href="https://wa.me/6285801573242?text=Halo%20min!" target="_blank">
+  <div class="sb-icon">👤<span class="sb-dot" id="sbDot"></span></div>
+  <div style="flex:1;min-width:0;">
+    <div class="sb-name">Owner BocchiBOT</div>
+    <div class="sb-status" id="sbLabel">Memuat...</div>
+    <div class="sb-time" id="sbTime"></div>
   </div>
-  <div class="s-arrow">→</div>
+  <div class="sb-arrow">→</div>
 </a>
 
 <script>
-const API_BASE="https://simon-iso-kentucky-liability.trycloudflare.com";
-const STATUS_URL="https://lumaranmah156-spec.github.io/bochibot/status.json";
+const API_BASE = "https://simon-iso-kentucky-liability.trycloudflare.com";
+const STATUS_URL = "https://lumaranmah156-spec.github.io/bochibot/status.json";
+
+/* custom cursor */
+const cur = document.getElementById('cursor');
+const ring = document.getElementById('cursor-ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove', e=>{
+  mx=e.clientX; my=e.clientY;
+  cur.style.left=mx+'px'; cur.style.top=my+'px';
+});
+function animRing(){
+  rx+=(mx-rx)*0.12; ry+=(my-ry)*0.12;
+  ring.style.left=rx+'px'; ring.style.top=ry+'px';
+  requestAnimationFrame(animRing);
+}
+animRing();
+document.querySelectorAll('a,button').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{cur.style.transform='translate(-50%,-50%) scale(2.5)';ring.style.width='52px';ring.style.height='52px';});
+  el.addEventListener('mouseleave',()=>{cur.style.transform='translate(-50%,-50%) scale(1)';ring.style.width='38px';ring.style.height='38px';});
+});
 
 /* progress bar */
 window.addEventListener('scroll',()=>{
-  document.getElementById('prog').style.width=(window.scrollY/(document.body.scrollHeight-window.innerHeight)*100)+'%';
-  document.getElementById('navbar').classList.toggle('scrolled',window.scrollY>40);
+  const p = window.scrollY/(document.body.scrollHeight-window.innerHeight)*100;
+  document.getElementById('prog').style.width=p+'%';
+  document.getElementById('navbar').classList.toggle('solid',window.scrollY>40);
 });
 
-/* animated particles */
-(function(){
-  const c=document.getElementById('particles');
-  const colors=['rgba(0,240,130,','rgba(0,212,255,','rgba(168,85,247,'];
-  for(let i=0;i<18;i++){
-    const p=document.createElement('div');
-    p.className='particle';
-    const size=Math.random()*3+1;
-    const color=colors[Math.floor(Math.random()*colors.length)];
-    p.style.cssText=`
-      width:${size}px;height:${size}px;
-      left:${Math.random()*100}%;
-      background:${color+0.6})};
-      animation-duration:${Math.random()*15+10}s;
-      animation-delay:${Math.random()*-20}s;
-    `;
-    c.appendChild(p);
-  }
-})();
-
-/* counter animation */
-function animCounter(el){
-  const target=+el.dataset.t,dur=1800,start=performance.now();
-  const tick=now=>{
-    const p=Math.min((now-start)/dur,1);
-    el.textContent=Math.floor((1-Math.pow(1-p,3))*target);
-    if(p<1)requestAnimationFrame(tick);else el.textContent=target;
-  };
-  requestAnimationFrame(tick);
-}
-const cObs=new IntersectionObserver(entries=>{
-  entries.forEach(e=>{if(e.isIntersecting){animCounter(e.target);cObs.unobserve(e.target);}});
-},{threshold:0.5});
-document.querySelectorAll('.counter').forEach(el=>cObs.observe(el));
-
-/* reveal on scroll */
-const rObs=new IntersectionObserver(entries=>{
-  entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');});
+/* reveal */
+const rObs = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); });
 },{threshold:0.06});
 document.querySelectorAll('.reveal').forEach(el=>rObs.observe(el));
 
-/* faq toggle */
+/* faq */
 function toggleFaq(el){
-  const item=el.parentElement,open=item.classList.contains('open');
+  const item=el.parentElement, open=item.classList.contains('open');
   document.querySelectorAll('.faq-item').forEach(i=>i.classList.remove('open'));
-  if(!open)item.classList.add('open');
+  if(!open) item.classList.add('open');
 }
 
-/* slot checker */
+/* slot */
 async function checkSlot(){
   try{
     const d=await(await fetch(`${API_BASE}/slot`)).json();
-    const dot=document.getElementById('slot-dot'),txt=document.getElementById('slot-text');
+    const dot=document.getElementById('slot-dot'), txt=document.getElementById('slot-text');
     if(d.tersedia){
-      dot.style.cssText='background:var(--green);box-shadow:0 0 7px var(--green);width:7px;height:7px;border-radius:50%;display:inline-block;animation:pulse 2s ease-in-out infinite;';
+      dot.style.cssText='background:var(--green);box-shadow:0 0 7px var(--green);width:7px;height:7px;border-radius:50%;display:inline-block;';
       txt.style.color='var(--green)';
       txt.textContent=`Slot aktif: ${d.aktif}/${d.max} — Tersedia!`;
-    }else{
-      dot.style.cssText='background:#ff3c50;width:7px;height:7px;border-radius:50%;display:inline-block;';
-      txt.style.color='#ff3c50';
+    } else {
+      dot.style.cssText='background:#ff4d4d;width:7px;height:7px;border-radius:50%;display:inline-block;';
+      txt.style.color='#ff4d4d';
       txt.textContent=`Slot penuh (${d.aktif}/${d.max}) — Coba lagi nanti`;
     }
-  }catch{document.getElementById('slot-text').textContent='Cek slot: hubungi owner';}
+  } catch { document.getElementById('slot-text').textContent='Cek slot: hubungi owner'; }
 }
 checkSlot();
 
-/* status banner */
+/* status badge */
 function applyStatus(status){
-  const banner=document.getElementById('statusBanner');
-  const dot=document.getElementById('sDot');
-  const label=document.getElementById('sLabel');
-  const time=document.getElementById('sTime');
+  const badge=document.getElementById('status-badge');
+  const dot=document.getElementById('sbDot');
+  const label=document.getElementById('sbLabel');
+  const time=document.getElementById('sbTime');
   const now=new Date().toLocaleString('id-ID',{timeZone:'Asia/Jakarta',hour:'2-digit',minute:'2-digit'});
-  banner.className='status-banner';dot.className='s-dot';label.className='s-status';
+  dot.className='sb-dot';
+  label.className='sb-status';
   if(status==='on'){
-    banner.classList.add('online');dot.classList.add('g');label.classList.add('g');
+    dot.classList.add('sb-dot-g');
+    label.classList.add('sb-g');
     label.textContent='● FAST RESPON';
     time.textContent=`Aktif sekarang · ${now} WIB`;
-    banner.style.borderColor='rgba(0,240,130,0.25)';
-    /* update WA link with context */
-    banner.href='https://wa.me/6285801573242?text=Halo%20min%2C%20mau%20tanya%20tentang%20BocchiBOT!';
-  }else if(status==='slow'){
-    banner.classList.add('slow');dot.classList.add('y');label.classList.add('y');
+    badge.style.borderColor='rgba(0,255,140,0.2)';
+  } else if(status==='slow'){
+    dot.classList.add('sb-dot-y');
+    label.classList.add('sb-y');
     label.textContent='◐ SLOW RESPON';
     time.textContent=`Mungkin lambat · ${now} WIB`;
-    banner.style.borderColor='rgba(247,204,68,0.2)';
-    banner.href='https://wa.me/6285801573242?text=Halo%20min!';
-  }else{
-    banner.classList.add('offline');dot.classList.add('r');label.classList.add('r');
+    badge.style.borderColor='rgba(255,224,102,0.15)';
+  } else {
+    dot.classList.add('sb-dot-r');
+    label.classList.add('sb-r');
     label.textContent='○ ISTIRAHAT';
     time.textContent='Fast respon mulai 09:00 WIB';
-    banner.style.borderColor='rgba(255,60,80,0.12)';
-    banner.href='https://wa.me/6285801573242?text=Halo%20min!';
+    badge.style.borderColor='rgba(255,77,77,0.12)';
   }
 }
 async function fetchStatus(){
   try{
     const r=await fetch(`${STATUS_URL}?_=${Date.now()}`);
-    if(!r.ok)throw new Error();
+    if(!r.ok) throw new Error();
     applyStatus((await r.json()).status??'off');
-  }catch{applyStatus('off');}
+  } catch { applyStatus('off'); }
 }
 fetchStatus();
 setInterval(fetchStatus,15000);
