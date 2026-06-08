@@ -1,803 +1,478 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BocchiBOT — WA Bot Serbaguna</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<!--
+  ═══════════════════════════════════════════════════════════════════
+  BOCCHIBOT AUTO-PAY + VOUCHER SECTION
+  Flow: Isi form → Bayar QRIS → Dapat kode voucher → Kirim ke bot
+  Tempel sebelum </body> di index.html kamu
+  ═══════════════════════════════════════════════════════════════════
+-->
+
+<!-- ── CSS ─────────────────────────────────────────────────────────── -->
 <style>
-:root {
-  --bg: #060810;
-  --surface: #0c1018;
-  --surface2: #111820;
-  --border: #1c2535;
-  --green: #00f082;
-  --cyan: #00d4ff;
-  --yellow: #f7cc44;
-  --purple: #a855f7;
-  --text: #c0cce0;
-  --muted: #48566a;
-  --white: #eef2fa;
-  --wa: #25D366;
+.pay-overlay{
+  position:fixed;inset:0;z-index:500;
+  background:rgba(4,6,14,0.9);backdrop-filter:blur(20px);
+  display:flex;align-items:center;justify-content:center;padding:20px;
+  opacity:0;pointer-events:none;transition:opacity 0.35s;
 }
-*{margin:0;padding:0;box-sizing:border-box;}
-html{scroll-behavior:smooth;}
-body{background:var(--bg);color:var(--text);font-family:'Space Grotesk',sans-serif;overflow-x:hidden;}
-
-/* animated grid bg */
-body::before{
-  content:'';position:fixed;inset:0;
-  background-image:linear-gradient(rgba(0,240,130,0.018) 1px,transparent 1px),linear-gradient(90deg,rgba(0,240,130,0.018) 1px,transparent 1px);
-  background-size:56px 56px;pointer-events:none;z-index:0;
-  animation:gridDrift 60s linear infinite;
+.pay-overlay.show{opacity:1;pointer-events:all;}
+.pay-modal{
+  background:var(--surface);border:1px solid var(--border);border-radius:24px;
+  width:100%;max-width:480px;max-height:92vh;overflow-y:auto;
+  transform:translateY(28px) scale(0.97);
+  transition:transform 0.38s cubic-bezier(.22,1,.36,1);
+  position:relative;scrollbar-width:thin;scrollbar-color:var(--border) transparent;
 }
-@keyframes gridDrift{0%{background-position:0 0}100%{background-position:56px 56px}}
+.pay-overlay.show .pay-modal{transform:none;}
+.pay-modal::-webkit-scrollbar{width:3px;}
+.pay-modal::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
 
-/* floating orbs */
-.orb{position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(80px);animation:orbFloat 20s ease-in-out infinite;}
-.orb1{width:400px;height:400px;background:rgba(0,240,130,0.04);top:-100px;left:-100px;animation-duration:25s;}
-.orb2{width:320px;height:320px;background:rgba(0,212,255,0.035);bottom:-80px;right:-60px;animation-duration:30s;animation-delay:-10s;}
-.orb3{width:250px;height:250px;background:rgba(168,85,247,0.03);top:50%;left:40%;animation-duration:22s;animation-delay:-6s;}
-@keyframes orbFloat{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(30px,-20px) scale(1.05)}66%{transform:translate(-20px,15px) scale(0.95)}}
+/* header */
+.pay-hdr{padding:26px 28px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
+.pay-hdr-title{font-size:15px;font-weight:700;color:var(--white);display:flex;align-items:center;gap:10px;}
+.pay-close{width:32px;height:32px;border-radius:9px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;line-height:1;}
+.pay-close:hover{border-color:rgba(255,60,80,0.3);color:#ff3c50;}
+.pay-body{padding:22px 28px;}
 
-/* NAVBAR */
-nav{
-  position:fixed;top:0;left:0;right:0;z-index:100;
-  height:62px;display:flex;align-items:center;justify-content:space-between;padding:0 36px;
-  background:rgba(6,8,16,0.82);backdrop-filter:blur(20px);
-  border-bottom:1px solid var(--border);
-  transition:all 0.3s;
+/* step bar */
+.pay-steps{display:flex;align-items:center;gap:0;margin-bottom:26px;}
+.psd{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;border:1px solid var(--border);color:var(--muted);background:var(--surface2);flex-shrink:0;transition:all 0.3s;}
+.psd.active{background:var(--green);color:#050810;border-color:var(--green);box-shadow:0 0 12px rgba(0,240,130,0.35);}
+.psd.done{background:rgba(0,240,130,0.1);color:var(--green);border-color:rgba(0,240,130,0.2);}
+.psl{flex:1;height:1px;background:var(--border);transition:background 0.3s;}
+.psl.done{background:rgba(0,240,130,0.25);}
+
+/* inputs */
+.pay-label{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:7px;}
+.pay-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:11px;padding:12px 15px;font-size:14px;color:var(--white);font-family:'Space Grotesk',sans-serif;outline:none;transition:border-color 0.2s;}
+.pay-input:focus{border-color:rgba(0,240,130,0.3);}
+.pay-input::placeholder{color:var(--muted);}
+
+/* paket grid */
+.paket-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-bottom:18px;}
+.paket-btn{background:var(--surface2);border:1px solid var(--border);border-radius:11px;padding:13px 11px;text-align:left;cursor:pointer;transition:all 0.2s;font-family:'Space Grotesk',sans-serif;}
+.paket-btn:hover{border-color:rgba(0,240,130,0.18);}
+.paket-btn.selected{border-color:var(--green);background:rgba(0,240,130,0.05);box-shadow:0 0 14px rgba(0,240,130,0.08);}
+.paket-btn.prem.selected{border-color:var(--purple);background:rgba(168,85,247,0.05);box-shadow:0 0 14px rgba(168,85,247,0.08);}
+.pk-name{font-size:12px;font-weight:700;color:var(--white);margin-bottom:2px;}
+.pk-sub{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);}
+.pk-price{font-size:14px;font-weight:700;color:var(--green);margin-top:7px;}
+.paket-btn.prem .pk-price{color:var(--purple);}
+.pk-tag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:7px;border-radius:4px;padding:2px 5px;margin-left:4px;vertical-align:middle;}
+.pk-tag.p{background:rgba(168,85,247,0.12);color:var(--purple);border:1px solid rgba(168,85,247,0.18);}
+.pk-tag.e{background:rgba(0,212,255,0.08);color:var(--cyan);border:1px solid rgba(0,212,255,0.12);}
+
+/* summary */
+.pay-summary{background:var(--surface2);border:1px solid var(--border);border-radius:11px;padding:13px 15px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center;}
+.ps-left{font-size:13px;color:var(--muted);}
+.ps-left strong{color:var(--white);}
+.ps-price{font-size:20px;font-weight:700;color:var(--green);letter-spacing:-0.03em;}
+
+/* buttons */
+.pay-btn{width:100%;padding:14px;border-radius:12px;border:none;font-size:14px;font-weight:700;font-family:'Space Grotesk',sans-serif;cursor:pointer;transition:all 0.25s;display:flex;align-items:center;justify-content:center;gap:8px;}
+.pay-btn.g{background:var(--green);color:#050810;}.pay-btn.g:hover:not(:disabled){box-shadow:0 4px 24px rgba(0,240,130,0.3);transform:translateY(-2px);}
+.pay-btn.g:disabled{opacity:0.45;cursor:not-allowed;transform:none;}
+.pay-btn.ghost{background:transparent;color:var(--muted);border:1px solid var(--border);margin-top:8px;}
+.pay-btn.ghost:hover{border-color:rgba(255,60,80,0.25);color:#ff3c50;}
+
+/* QR */
+.qr-wrap{text-align:center;padding:10px 0 20px;}
+.qr-box{display:inline-block;padding:14px;background:#fff;border-radius:14px;box-shadow:0 0 32px rgba(0,240,130,0.07);margin-bottom:14px;}
+.pay-timer{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--yellow);letter-spacing:0.05em;margin:10px 0;}
+.pay-timer.urgent{color:#ff3c50;animation:tpulse 1s ease-in-out infinite;}
+@keyframes tpulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.qr-meta{background:rgba(0,240,130,0.04);border:1px solid rgba(0,240,130,0.1);border-radius:10px;padding:13px;margin-top:14px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center;}
+.qm-val{font-size:13px;font-weight:700;color:var(--white);margin-bottom:2px;}
+.qm-lbl{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);}
+.poll-row{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);}
+.poll-dots span{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--muted);animation:pb 1.2s ease-in-out infinite;margin:0 2px;}
+.poll-dots span:nth-child(2){animation-delay:.2s;}.poll-dots span:nth-child(3){animation-delay:.4s;}
+@keyframes pb{0%,80%,100%{transform:scale(.7);opacity:.4}40%{transform:scale(1);opacity:1}}
+
+/* voucher reveal */
+.voucher-box{
+  background:linear-gradient(135deg,rgba(0,240,130,0.07),rgba(0,212,255,0.04));
+  border:1px solid rgba(0,240,130,0.2);border-radius:16px;
+  padding:24px;text-align:center;margin-bottom:20px;position:relative;overflow:hidden;
 }
-nav.scrolled{background:rgba(6,8,16,0.95);border-color:rgba(0,240,130,0.1);}
-.logo{font-size:17px;font-weight:700;color:var(--white);display:flex;align-items:center;gap:9px;text-decoration:none;}
-.logo-icon{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,rgba(0,240,130,0.15),rgba(0,212,255,0.1));border:1px solid rgba(0,240,130,0.2);display:flex;align-items:center;justify-content:center;font-size:17px;}
-.logo em{font-style:normal;background:linear-gradient(120deg,var(--green),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.nav-right{display:flex;align-items:center;gap:28px;}
-.nav-right a{font-size:13px;color:var(--muted);text-decoration:none;transition:color 0.2s;position:relative;}
-.nav-right a:not(.nav-cta):hover{color:var(--green);}
-.nav-right a:not(.nav-cta)::after{content:'';position:absolute;bottom:-2px;left:0;width:0;height:1px;background:var(--green);transition:width 0.25s;}
-.nav-right a:not(.nav-cta):hover::after{width:100%;}
-.nav-cta{
-  background:var(--green);color:#050810;border:none;border-radius:9px;
-  padding:9px 20px;font-size:13px;font-weight:700;font-family:'Space Grotesk',sans-serif;
-  cursor:pointer;transition:all 0.2s;box-shadow:0 0 20px rgba(0,240,130,0.15);
+.voucher-box::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--green),var(--cyan),transparent);}
+.vb-label{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:0.14em;text-transform:uppercase;margin-bottom:14px;}
+.vb-code{
+  font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:700;
+  color:var(--white);letter-spacing:0.12em;
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:12px;padding:14px 20px;margin-bottom:10px;
+  cursor:pointer;transition:all 0.2s;user-select:all;
+  display:flex;align-items:center;justify-content:center;gap:12px;
 }
-.nav-cta:hover{transform:translateY(-1px);box-shadow:0 4px 24px rgba(0,240,130,0.3);}
+.vb-code:hover{border-color:rgba(0,240,130,0.3);background:rgba(0,240,130,0.04);}
+.vb-copy-hint{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);}
+.vb-copy-hint.copied{color:var(--green);}
 
-/* HERO */
-.hero{
-  min-height:100vh;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;text-align:center;padding:110px 24px 80px;
-  position:relative;z-index:1;
+/* command box */
+.cmd-box{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:18px;}
+.cmd-title{font-size:13px;font-weight:700;color:var(--white);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.cmd-step{display:flex;gap:10px;align-items:flex-start;margin-bottom:8px;font-size:12px;color:var(--muted);line-height:1.6;}
+.cmd-step:last-child{margin-bottom:0;}
+.cmd-n{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--green);font-weight:700;flex-shrink:0;margin-top:1px;}
+.cmd-code{
+  display:inline-block;background:rgba(0,240,130,0.08);border:1px solid rgba(0,240,130,0.15);
+  border-radius:6px;padding:3px 9px;font-family:'JetBrains Mono',monospace;font-size:11px;
+  color:var(--green);cursor:pointer;transition:all 0.2s;margin-top:3px;
 }
-.hero-badge{
-  display:inline-flex;align-items:center;gap:8px;
-  font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--green);
-  letter-spacing:0.1em;text-transform:uppercase;margin-bottom:32px;
-  border:1px solid rgba(0,240,130,0.15);border-radius:100px;padding:7px 16px;
-  background:rgba(0,240,130,0.05);backdrop-filter:blur(10px);
-  opacity:0;animation:fadeUp 0.7s 0.1s ease forwards;
-}
-.live{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2s ease-in-out infinite;}
-@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 8px var(--green)}50%{opacity:0.5;box-shadow:0 0 3px var(--green)}}
+.cmd-code:hover{background:rgba(0,240,130,0.14);}
 
-h1.hero-h{
-  font-size:clamp(56px,10vw,104px);font-weight:700;letter-spacing:-0.045em;line-height:0.95;
-  color:var(--white);margin-bottom:24px;
-  opacity:0;animation:fadeUp 0.7s 0.2s ease forwards;
-}
-h1.hero-h em{font-style:normal;background:linear-gradient(135deg,var(--green) 0%,var(--cyan) 50%,var(--purple) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.hero-sub{font-size:17px;color:var(--muted);line-height:1.75;max-width:440px;margin-bottom:48px;opacity:0;animation:fadeUp 0.7s 0.3s ease forwards;}
-.hero-btns{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;opacity:0;animation:fadeUp 0.7s 0.4s ease forwards;}
+/* error */
+.pay-err{background:rgba(255,60,80,0.07);border:1px solid rgba(255,60,80,0.18);border-radius:9px;padding:11px 14px;font-size:13px;color:#ff3c50;margin-bottom:14px;display:none;}
+.pay-err.show{display:block;}
 
-.btn-main{
-  background:var(--green);color:#060810;border:none;border-radius:12px;
-  padding:16px 32px;font-size:15px;font-weight:700;font-family:'Space Grotesk',sans-serif;
-  cursor:pointer;text-decoration:none;transition:all 0.25s;
-  box-shadow:0 0 30px rgba(0,240,130,0.2);display:inline-flex;align-items:center;gap:8px;
-}
-.btn-main:hover{transform:translateY(-3px);box-shadow:0 8px 40px rgba(0,240,130,0.35);}
-.btn-out{
-  background:rgba(255,255,255,0.03);color:var(--text);border:1px solid var(--border);border-radius:12px;
-  padding:16px 26px;font-size:15px;font-weight:600;font-family:'Space Grotesk',sans-serif;
-  cursor:pointer;text-decoration:none;transition:all 0.25s;display:inline-flex;align-items:center;gap:8px;
-}
-.btn-out:hover{border-color:rgba(0,240,130,0.25);color:var(--green);background:rgba(0,240,130,0.04);}
+/* spinner */
+.spin{width:15px;height:15px;border:2px solid rgba(0,0,0,0.15);border-top-color:#050810;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;}
+@keyframes spin{to{transform:rotate(360deg)}}
 
-/* hero particles */
-.particles{position:absolute;inset:0;overflow:hidden;pointer-events:none;}
-.particle{position:absolute;border-radius:50%;animation:particleFloat linear infinite;}
-@keyframes particleFloat{0%{transform:translateY(100vh) scale(0);opacity:0}10%{opacity:1}90%{opacity:0.5}100%{transform:translateY(-10vh) scale(1);opacity:0}}
+/* copied toast */
+.copied-toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--green);color:#050810;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;padding:8px 20px;border-radius:100px;opacity:0;transition:all 0.3s;pointer-events:none;z-index:600;}
+.copied-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
-@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
-
-/* STRIP */
-.strip{border-top:1px solid var(--border);border-bottom:1px solid var(--border);overflow:hidden;position:relative;z-index:1;background:rgba(0,0,0,0.2);}
-.strip-track{display:flex;white-space:nowrap;width:max-content;animation:marquee 28s linear infinite;}
-.strip-track:hover{animation-play-state:paused;}
-@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-.strip-item{display:inline-flex;align-items:center;gap:8px;padding:16px 30px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;transition:color 0.2s;}
-.strip-item:hover{color:var(--green);}
-.strip-dot{color:var(--green);font-size:14px;}
-
-/* STATS */
-.nums{
-  display:grid;grid-template-columns:repeat(4,1fr);max-width:900px;margin:60px auto;
-  position:relative;z-index:1;border:1px solid var(--border);border-radius:20px;overflow:hidden;
-  background:var(--surface);
-}
-.num-box{
-  padding:36px 20px;text-align:center;border-right:1px solid var(--border);
-  transition:all 0.3s;cursor:default;position:relative;overflow:hidden;
-}
-.num-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--green),transparent);opacity:0;transition:opacity 0.3s;}
-.num-box:hover::before{opacity:1;}
-.num-box:last-child{border-right:none;}
-.num-box:hover{background:var(--surface2);}
-.num-val{font-size:42px;font-weight:700;color:var(--white);letter-spacing:-0.05em;line-height:1;margin-bottom:8px;}
-.num-val em{font-style:normal;color:var(--green);font-size:26px;}
-.num-lbl{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;}
-
-/* SECTIONS */
-.sec{max-width:1080px;margin:0 auto;padding:100px 24px;position:relative;z-index:1;}
-.sec-tag{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--green);letter-spacing:0.14em;text-transform:uppercase;margin-bottom:16px;display:flex;align-items:center;gap:10px;}
-.sec-tag::before{content:'';width:24px;height:1px;background:linear-gradient(90deg,transparent,var(--green));}
-.sec-title{font-size:clamp(32px,4.5vw,52px);font-weight:700;letter-spacing:-0.035em;color:var(--white);line-height:1.02;margin-bottom:14px;}
-.sec-sub{font-size:15px;color:var(--muted);line-height:1.75;max-width:420px;margin-bottom:56px;}
-
-/* FEATURES */
-.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
-.feat-card{
-  background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:30px;
-  transition:all 0.3s;position:relative;overflow:hidden;group:true;
-}
-.feat-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,240,130,0.03),transparent);opacity:0;transition:opacity 0.3s;border-radius:18px;}
-.feat-card:hover{border-color:rgba(0,240,130,0.2);background:var(--surface2);transform:translateY(-4px);box-shadow:0 16px 48px rgba(0,0,0,0.4);}
-.feat-card:hover::before{opacity:1;}
-.feat-card.wide{grid-column:span 2;}
-.feat-icon{font-size:30px;margin-bottom:18px;display:block;animation:none;transition:transform 0.3s;}
-.feat-card:hover .feat-icon{transform:scale(1.1) rotate(-3deg);}
-.feat-name{font-size:15px;font-weight:700;color:var(--white);margin-bottom:10px;letter-spacing:-0.01em;}
-.feat-desc{font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:18px;}
-.tags{display:flex;flex-wrap:wrap;gap:5px;}
-.tag{font-family:'JetBrains Mono',monospace;font-size:9px;border-radius:6px;padding:3px 9px;border:1px solid;transition:all 0.2s;}
-.tag{color:rgba(0,240,130,0.5);background:rgba(0,240,130,0.04);border-color:rgba(0,240,130,0.1);}
-.tag.c{color:rgba(0,212,255,0.5);background:rgba(0,212,255,0.04);border-color:rgba(0,212,255,0.1);}
-.tag.y{color:rgba(247,204,68,0.5);background:rgba(247,204,68,0.04);border-color:rgba(247,204,68,0.1);}
-.tag.p{color:rgba(168,85,247,0.5);background:rgba(168,85,247,0.04);border-color:rgba(168,85,247,0.1);}
-
-/* PRICING */
-.price-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:14px;}
-.price-grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;max-width:720px;margin:0 auto;}
-.price-card{
-  background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:34px 30px;
-  position:relative;overflow:hidden;transition:transform 0.3s,box-shadow 0.3s;
-}
-.price-card:hover{transform:translateY(-4px);box-shadow:0 20px 60px rgba(0,0,0,0.4);}
-.price-card.featured{border-color:rgba(0,240,130,0.22);background:linear-gradient(160deg,rgba(0,240,130,0.04),var(--surface));}
-.price-card.featured::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--green),transparent);}
-.price-card.yellow-card{border-color:rgba(247,204,68,0.18);}
-.price-card.cyan-card{border-color:rgba(0,212,255,0.18);}
-.price-badge{position:absolute;top:20px;right:20px;font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;border-radius:100px;padding:4px 12px;font-family:'JetBrains Mono',monospace;}
-.price-badge.g{background:var(--green);color:#050810;}
-.price-badge.y{background:var(--yellow);color:#050810;}
-.price-badge.c{background:var(--cyan);color:#050810;}
-.price-plan{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:14px;}
-.price-val{font-size:50px;font-weight:700;color:var(--white);letter-spacing:-0.06em;line-height:1;}
-.price-val sup{font-size:18px;vertical-align:super;font-weight:600;}
-.price-period{font-size:11px;color:var(--muted);margin-bottom:26px;margin-top:5px;}
-.price-divider{height:1px;background:var(--border);margin-bottom:22px;}
-.price-req{display:inline-flex;align-items:center;gap:6px;background:rgba(0,212,255,0.07);border:1px solid rgba(0,212,255,0.14);border-radius:7px;padding:6px 11px;margin-bottom:18px;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--cyan);}
-.price-feats{list-style:none;display:flex;flex-direction:column;gap:11px;margin-bottom:30px;}
-.price-feats li{font-size:13px;color:var(--text);display:flex;gap:11px;align-items:flex-start;line-height:1.45;}
-.price-feats li.dim{color:var(--muted);}
-.pcheck{flex-shrink:0;font-size:12px;margin-top:1px;}
-.pcheck.g{color:var(--green);}.pcheck.y{color:var(--yellow);}.pcheck.c{color:var(--cyan);}.pcheck.x{color:var(--muted);}
-.price-btn{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;padding:14px;border-radius:11px;border:none;font-size:13px;font-weight:700;font-family:'Space Grotesk',sans-serif;cursor:pointer;text-decoration:none;transition:all 0.25s;}
-.price-btn.g{background:var(--green);color:#050810;}.price-btn.g:hover{box-shadow:0 4px 24px rgba(0,240,130,0.35);transform:translateY(-1px);}
-.price-btn.y{background:var(--yellow);color:#050810;}.price-btn.y:hover{box-shadow:0 4px 24px rgba(247,204,68,0.3);transform:translateY(-1px);}
-.price-btn.c{background:var(--cyan);color:#050810;}.price-btn.c:hover{box-shadow:0 4px 24px rgba(0,212,255,0.3);transform:translateY(-1px);}
-.price-btn.ghost{background:transparent;color:var(--text);border:1px solid var(--border);}.price-btn.ghost:hover{border-color:rgba(0,240,130,0.25);color:var(--green);}
-
-.slot-pill{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:100px;padding:9px 20px;margin:28px auto 0;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);transition:all 0.3s;}
-
-/* HOW TO ORDER */
-.steps{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--border);border-radius:20px;overflow:hidden;margin-top:56px;}
-.step{background:var(--surface);padding:38px 30px;transition:background 0.25s;position:relative;overflow:hidden;}
-.step::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--green),var(--cyan));transform:scaleX(0);transition:transform 0.3s;transform-origin:left;}
-.step:hover::after{transform:scaleX(1);}
-.step:hover{background:var(--surface2);}
-.step-n{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.1em;margin-bottom:18px;}
-.step-icon{font-size:30px;margin-bottom:16px;display:block;transition:transform 0.3s;}
-.step:hover .step-icon{transform:scale(1.12);}
-.step-title{font-size:16px;font-weight:700;color:var(--white);margin-bottom:9px;}
-.step-desc{font-size:13px;color:var(--muted);line-height:1.7;}
-
-/* TRUST */
-.trust-box{
-  background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:52px;
-  position:relative;overflow:hidden;
-}
-.trust-box::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(0,240,130,0.45),rgba(0,212,255,0.35),transparent);}
-.trust-badges{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:30px;}
-.trust-badge{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;border-radius:100px;padding:5px 13px;border:1px solid;}
-.trust-badge.g{color:var(--green);border-color:rgba(0,240,130,0.2);background:rgba(0,240,130,0.06);}
-.trust-badge.y{color:var(--yellow);border-color:rgba(247,204,68,0.2);background:rgba(247,204,68,0.06);}
-.trust-badge.c{color:var(--cyan);border-color:rgba(0,212,255,0.2);background:rgba(0,212,255,0.06);}
-.trust-title{font-size:clamp(30px,4vw,48px);font-weight:700;letter-spacing:-0.03em;color:var(--white);line-height:1.02;margin-bottom:16px;}
-.trust-title em{font-style:normal;background:linear-gradient(120deg,var(--green),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.trust-desc{font-size:14px;color:var(--muted);line-height:1.8;max-width:530px;margin-bottom:48px;}
-.timeline{display:flex;flex-direction:column;gap:0;}
-.tl{display:flex;gap:20px;}
-.tl-left{display:flex;flex-direction:column;align-items:center;}
-.tl-dot{width:14px;height:14px;border-radius:50%;flex-shrink:0;transition:box-shadow 0.3s;}
-.tl-dot.g{background:var(--green);box-shadow:0 0 12px rgba(0,240,130,0.5);}
-.tl-dot.c{background:var(--cyan);box-shadow:0 0 12px rgba(0,212,255,0.5);}
-.tl-dot.y{background:var(--yellow);box-shadow:0 0 12px rgba(247,204,68,0.5);}
-.tl-line{width:1px;flex:1;background:linear-gradient(var(--border),transparent);margin:5px 0;}
-.tl-content{padding-bottom:32px;}
-.tl-year{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--green);letter-spacing:0.09em;margin-bottom:5px;}
-.tl-title-txt{font-size:15px;font-weight:700;color:var(--white);margin-bottom:6px;}
-.tl-desc-txt{font-size:13px;color:var(--muted);line-height:1.65;max-width:470px;}
-.trust-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;margin-top:14px;border:1px solid var(--border);border-radius:18px;overflow:hidden;}
-.ts{background:var(--surface);padding:26px 18px;text-align:center;transition:background 0.25s;}
-.ts:hover{background:var(--surface2);}
-.ts-icon{font-size:22px;margin-bottom:9px;}
-.ts-val{font-size:24px;font-weight:700;color:var(--white);letter-spacing:-0.03em;margin-bottom:5px;}
-.ts-lbl{font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px;}
-.ts-sub{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);}
-
-/* FAQ */
-.faq-list{display:flex;flex-direction:column;gap:8px;max-width:700px;margin:56px auto 0;}
-.faq-item{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:border-color 0.25s;}
-.faq-item:hover{border-color:rgba(0,240,130,0.12);}
-.faq-item.open{border-color:rgba(0,240,130,0.18);}
-.faq-q{padding:22px 26px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-size:14px;font-weight:600;color:var(--white);user-select:none;}
-.faq-q:hover{color:var(--green);}
-.faq-icon{color:var(--muted);font-size:20px;transition:transform 0.3s,color 0.2s;flex-shrink:0;margin-left:16px;line-height:1;}
-.faq-item.open .faq-icon{transform:rotate(45deg);color:var(--green);}
-.faq-a{max-height:0;overflow:hidden;transition:max-height 0.4s ease,padding 0.3s;font-size:13px;color:var(--muted);line-height:1.75;padding:0 26px;}
-.faq-item.open .faq-a{max-height:220px;padding:0 26px 22px;}
-
-/* CTA */
-.cta{text-align:center;padding:100px 24px;position:relative;z-index:1;max-width:580px;margin:0 auto;}
-.cta h2{font-size:clamp(38px,6vw,66px);font-weight:700;letter-spacing:-0.045em;color:var(--white);line-height:0.95;margin-bottom:18px;}
-.cta h2 em{font-style:normal;background:linear-gradient(120deg,var(--green),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.cta p{font-size:16px;color:var(--muted);margin-bottom:44px;line-height:1.75;}
-.wa-btn{
-  display:inline-flex;align-items:center;gap:13px;background:var(--wa);color:white;text-decoration:none;
-  border-radius:14px;padding:20px 40px;font-size:17px;font-weight:700;
-  transition:all 0.25s;box-shadow:0 4px 30px rgba(37,211,102,0.2);
-}
-.wa-btn:hover{transform:translateY(-3px);box-shadow:0 10px 40px rgba(37,211,102,0.35);}
-
-/* FOOTER */
-footer{border-top:1px solid var(--border);padding:30px 36px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;position:relative;z-index:1;}
-.footer-logo{font-size:15px;font-weight:700;color:var(--white);}
-.footer-logo em{font-style:normal;color:var(--green);}
-.footer-copy{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);}
-.footer-links{display:flex;gap:22px;}
-.footer-links a{font-size:12px;color:var(--muted);text-decoration:none;transition:color 0.2s;}
-.footer-links a:hover{color:var(--green);}
-
-/* PROGRESS BAR */
-#prog{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,var(--green),var(--cyan),var(--purple));z-index:200;width:0;transition:width 0.08s;}
-
-/* STATUS BANNER — clickable */
-.status-banner{
-  position:fixed;bottom:22px;right:22px;z-index:200;
-  background:rgba(8,10,18,0.96);border:1px solid var(--border);
-  border-radius:18px;padding:15px 20px;display:flex;align-items:center;gap:13px;
-  min-width:230px;box-shadow:0 16px 48px rgba(0,0,0,0.7);backdrop-filter:blur(24px);
-  animation:bannerIn 0.5s 1.2s ease both;
-  cursor:pointer;text-decoration:none;
-  transition:all 0.3s;overflow:hidden;
-}
-.status-banner::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,240,130,0.03),transparent);opacity:0;transition:opacity 0.3s;}
-.status-banner:hover::before{opacity:1;}
-.status-banner:hover{transform:translateY(-3px);box-shadow:0 20px 60px rgba(0,0,0,0.8);}
-.status-banner.online{border-color:rgba(0,240,130,0.18);}
-.status-banner.slow{border-color:rgba(247,204,68,0.18);}
-.status-banner.offline{border-color:rgba(255,60,80,0.12);}
-@keyframes bannerIn{from{opacity:0;transform:translateY(16px) scale(0.95)}to{opacity:1;transform:translateY(0) scale(1)}}
-
-.s-ava{width:42px;height:42px;border-radius:12px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:18px;position:relative;flex-shrink:0;}
-.s-dot{position:absolute;bottom:-3px;right:-3px;width:11px;height:11px;border-radius:50%;border:2px solid rgba(8,10,18,0.96);}
-.s-dot.g{background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2s ease-in-out infinite;}
-.s-dot.y{background:var(--yellow);}
-.s-dot.r{background:#ff3c50;}
-.s-info{flex:1;min-width:0;}
-.s-name{font-size:13px;font-weight:700;color:var(--white);margin-bottom:2px;}
-.s-status{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:600;letter-spacing:0.06em;}
-.s-status.g{color:var(--green);}.s-status.y{color:var(--yellow);}.s-status.r{color:#ff3c50;}
-.s-time{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--muted);margin-top:2px;}
-.s-arrow{font-size:14px;color:var(--muted);transition:color 0.2s,transform 0.2s;flex-shrink:0;}
-.status-banner:hover .s-arrow{color:var(--green);transform:translateX(2px);}
-
-/* REVEAL ANIMATION */
-.reveal{opacity:0;transform:translateY(28px);transition:opacity 0.7s ease,transform 0.7s ease;}
-.reveal.visible{opacity:1;transform:translateY(0);}
-.reveal-delay-1{transition-delay:0.1s;}
-.reveal-delay-2{transition-delay:0.2s;}
-.reveal-delay-3{transition-delay:0.3s;}
-
-/* GLOW CARDS on hover */
-.glow-on-hover{transition:all 0.3s;}
-.glow-on-hover:hover{box-shadow:0 0 30px rgba(0,240,130,0.07);}
-
-@media(max-width:800px){
-  .feat-grid{grid-template-columns:1fr;}.feat-card.wide{grid-column:span 1;}
-  .price-grid,.price-grid-2{grid-template-columns:1fr;}
-  .steps{grid-template-columns:1fr;}
-  .nums{grid-template-columns:repeat(2,1fr);margin:40px 20px;}
-  .trust-stats{grid-template-columns:repeat(2,1fr);}
-  .nav-right a:not(.nav-cta){display:none;}
-  .trust-box{padding:30px 22px;}
-  nav{padding:0 18px;}
-}
 @media(max-width:480px){
-  footer{flex-direction:column;text-align:center;}
-  .status-banner{right:12px;bottom:12px;min-width:200px;}
+  .pay-body{padding:18px 18px;}
+  .pay-hdr{padding:20px 18px 16px;}
+  .vb-code{font-size:22px;padding:12px 14px;}
+}
+</style>
+
+<!-- ── MODAL ────────────────────────────────────────────────────────── -->
+<div class="pay-overlay" id="payOverlay">
+  <div class="pay-modal">
+    <div class="pay-hdr">
+      <div class="pay-hdr-title"><span>💳</span> Order BocchiBOT</div>
+      <button class="pay-close" onclick="closePayModal()">✕</button>
+    </div>
+    <div class="pay-body">
+
+      <!-- step bar -->
+      <div class="pay-steps">
+        <div class="psd active" id="sd1">1</div>
+        <div class="psl" id="sl1"></div>
+        <div class="psd" id="sd2">2</div>
+        <div class="psl" id="sl2"></div>
+        <div class="psd" id="sd3">3</div>
+        <div class="psl" id="sl3"></div>
+        <div class="psd" id="sd4">🎟</div>
+      </div>
+
+      <div class="pay-err" id="payErr"></div>
+
+      <!-- STEP 1: Form -->
+      <div id="pStep1">
+        <div style="margin-bottom:18px;">
+          <div class="pay-label">Link Grup WhatsApp</div>
+          <input class="pay-input" id="inputLink" type="text"
+            placeholder="https://chat.whatsapp.com/xxxxx"
+            oninput="validateS1()">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-top:6px;">
+            Pastikan link aktif. Bot akan otomatis join setelah voucher diklaim.
+          </div>
+        </div>
+        <div class="pay-label">Pilih Paket</div>
+        <div class="paket-grid" id="paketGrid"></div>
+        <div class="pay-summary" id="pSummary" style="display:none;">
+          <div class="ps-left"><strong id="sNama">—</strong><br><span id="sHari">—</span></div>
+          <div class="ps-price" id="sHarga">—</div>
+        </div>
+        <button class="pay-btn g" id="btnOrder" onclick="buatOrder()" disabled>Lanjut ke Pembayaran →</button>
+      </div>
+
+      <!-- STEP 2: QR QRIS -->
+      <div id="pStep2" style="display:none;">
+        <div class="qr-wrap">
+          <div class="qr-box"><div id="qrCanvas"></div></div>
+          <div style="font-size:13px;color:var(--muted);">Scan QR pakai <strong style="color:var(--white)">mobile banking / e-wallet</strong></div>
+          <div class="pay-timer" id="payTimer">⏳ Menghitung...</div>
+          <div class="qr-meta" id="qrMeta"></div>
+          <div class="poll-row">
+            <div class="poll-dots"><span></span><span></span><span></span></div>
+            Menunggu pembayaran...
+          </div>
+        </div>
+        <button class="pay-btn ghost" onclick="batalOrder()">Batalkan</button>
+      </div>
+
+      <!-- STEP 3 → 4: Voucher reveal -->
+      <div id="pStep3" style="display:none;">
+        <div style="text-align:center;margin-bottom:20px;">
+          <div style="font-size:44px;margin-bottom:10px;animation:successPop .5s cubic-bezier(.22,1,.36,1);">🎟️</div>
+          <div style="font-size:18px;font-weight:700;color:var(--white);margin-bottom:6px;">Pembayaran Berhasil!</div>
+          <div style="font-size:13px;color:var(--muted);line-height:1.7;">Kode voucher kamu sudah siap.<br>Kirim ke bot WhatsApp untuk aktivasi.</div>
+        </div>
+        @keyframes successPop{from{transform:scale(0)}to{transform:scale(1)}}
+
+        <div class="voucher-box">
+          <div class="vb-label">Kode Voucher Kamu</div>
+          <div class="vb-code" id="voucherCode" onclick="copyVoucher()">
+            <span id="vCodeText">—</span>
+            <span style="font-size:16px;color:var(--muted);">⎘</span>
+          </div>
+          <div class="vb-copy-hint" id="copyHint">Klik untuk salin kode</div>
+        </div>
+
+        <div class="cmd-box">
+          <div class="cmd-title">📱 Cara Aktivasi</div>
+          <div class="cmd-step">
+            <span class="cmd-n">01</span>
+            <div>Buka WhatsApp, chat ke bot atau kirim di grup mana saja</div>
+          </div>
+          <div class="cmd-step">
+            <span class="cmd-n">02</span>
+            <div>
+              Kirim perintah:<br>
+              <span class="cmd-code" id="cmdText" onclick="copyCmd()">.claimvoucher <span id="cmdVoucher">—</span></span>
+            </div>
+          </div>
+          <div class="cmd-step">
+            <span class="cmd-n">03</span>
+            <div>Bot akan otomatis join grup dan aktifkan sewa! 🚀</div>
+          </div>
+        </div>
+
+        <a id="waClaimBtn" href="#" target="_blank" class="pay-btn g" style="text-decoration:none;margin-bottom:8px;">
+          💬 Klaim via Bot Sekarang
+        </a>
+        <button class="pay-btn ghost" onclick="closePayModal()">Tutup</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- toast -->
+<div class="copied-toast" id="copiedToast">✓ Disalin!</div>
+
+<!-- QRCode.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+// ── CONFIG — GANTI INI ───────────────────────────────────────────────────────
+const PAY_API    = "http://89.21.85.28:3001"; // ← ganti IP/domain VPS
+const OWNER_WA   = "6285801573242";           // ← nomor WA bot/owner
+const BOT_NUMBER = "6285705977466";           // ← nomor WA bot untuk klaim
+// ────────────────────────────────────────────────────────────────────────────
+
+const PAKET_DATA = {
+  trial:    { label:"TRIAL",    hari:1,  harga:2000,  premium:false },
+  hemat:    { label:"HEMAT",    hari:15, harga:5000,  premium:false },
+  murah:    { label:"MURAH",    hari:30, harga:10000, premium:false },
+  lengkap:  { label:"LENGKAP",  hari:30, harga:15000, premium:true  },
+  sultan:   { label:"SULTAN",   hari:90, harga:30000, premium:true  },
+  extend7:  { label:"EXTEND7",  hari:7,  harga:4000,  premium:false },
+  extend14: { label:"EXTEND14", hari:14, harga:7000,  premium:false },
+  extend30: { label:"EXTEND30", hari:30, harga:10000, premium:false },
+};
+
+let _paket = null, _orderId = null, _poll = null, _timer = null, _qr = null;
+
+// ── RENDER PAKET ─────────────────────────────────────────────────────────────
+function renderPaket() {
+  const g = document.getElementById("paketGrid");
+  g.innerHTML = "";
+  const isExt = k => k.startsWith("extend");
+  [...Object.entries(PAKET_DATA).filter(([k])=>!isExt(k)),
+   ...Object.entries(PAKET_DATA).filter(([k])=>isExt(k))
+  ].forEach(([key, p]) => {
+    const b = document.createElement("button");
+    b.className = "paket-btn" + (p.premium?" prem":"");
+    b.dataset.key = key;
+    b.innerHTML = `
+      <div class="pk-name">${p.label}${p.premium?'<span class="pk-tag p">PREM</span>':""}${isExt(key)?'<span class="pk-tag e">EXT</span>':""}</div>
+      <div class="pk-sub">${p.hari} hari</div>
+      <div class="pk-price">Rp${p.harga.toLocaleString("id-ID")}</div>`;
+    b.onclick = () => selectPaket(key);
+    g.appendChild(b);
+  });
 }
 
-/* shimmer effect on featured card */
-@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
-.shimmer-line{height:1px;background:linear-gradient(90deg,transparent,rgba(0,240,130,0.6),rgba(0,212,255,0.4),transparent);background-size:200% 100%;animation:shimmer 3s linear infinite;}
-</style>
-</head>
-<body>
+function selectPaket(key) {
+  _paket = key;
+  document.querySelectorAll(".paket-btn").forEach(b=>b.classList.remove("selected"));
+  document.querySelector(`.paket-btn[data-key="${key}"]`).classList.add("selected");
+  const p = PAKET_DATA[key];
+  document.getElementById("sNama").textContent = p.label;
+  document.getElementById("sHari").textContent = `${p.hari} hari${p.premium?" · 👑 Premium":""}`;
+  document.getElementById("sHarga").textContent = `Rp${p.harga.toLocaleString("id-ID")}`;
+  document.getElementById("pSummary").style.display = "flex";
+  validateS1();
+}
 
-<div id="prog"></div>
+function validateS1() {
+  const link = document.getElementById("inputLink").value.trim();
+  document.getElementById("btnOrder").disabled =
+    !(/chat\.whatsapp\.com\/[\w\d]+/.test(link)) || !_paket;
+}
 
-<!-- floating orbs -->
-<div class="orb orb1"></div>
-<div class="orb orb2"></div>
-<div class="orb orb3"></div>
-
-<!-- floating particles -->
-<div class="particles" id="particles"></div>
-
-<nav id="navbar">
-  <a href="#" class="logo">
-    <div class="logo-icon">🤖</div>
-    Bocchi<em>BOT</em>
-  </a>
-  <div class="nav-right">
-    <a href="#fitur">Fitur</a>
-    <a href="#harga">Harga</a>
-    <a href="#faq">FAQ</a>
-    <a href="#harga" class="nav-cta">🚀 Order Sekarang</a>
-  </div>
-</nav>
-
-<section class="hero">
-  <div class="hero-badge"><span class="live"></span> WA Bot · Aktif 24/7 · 373+ Commands</div>
-  <h1 class="hero-h">Bot WA<br><em>Serbaguna</em></h1>
-  <p class="hero-sub">Sticker, AI, download media, mini game, RPG, dan ratusan fitur lain — mulai Rp5K aja.</p>
-  <div class="hero-btns">
-    <a href="#harga" class="btn-main">🚀 Order Bot</a>
-    <a href="#fitur" class="btn-out">Lihat Fitur →</a>
-  </div>
-</section>
-
-<div class="strip">
-  <div class="strip-track">
-    <span class="strip-item"><span class="strip-dot">✦</span> Sticker & Ephoto</span>
-    <span class="strip-item"><span class="strip-dot">✦</span> AI Gemini & ChatGPT</span>
-    <span class="strip-item"><span class="strip-dot">✦</span> TikTok & YouTube DL</span>
-    <span class="strip-item"><span class="strip-dot">✦</span> Mini Games</span>
-    <span class="strip-item"><span class="strip-dot">✦</span> Sistem RPG</span>
-    <span class="strip-item"><span class="strip-dot">✦</span> Manajemen Grup</span>
-    <span class="strip-item"><span class="strip-dot">✦</span> 373+ Commands</span>
-    <span class="strip-item"><span class="strip-dot">✦</span> 16 Kategori</span>
-    <span class="strip-item"><span class="strip-dot">✦</span> Sticker & Ephoto</span>
-    <span class="strip-item"><span class="strip-dot">✦</span> AI Gemini & ChatGPT</span>
-    <span class="strip-item"><span class="strip-dot">✦</span> TikTok & YouTube DL</span>
-    <span class="strip-item"><span class="strip-dot">✦</span> Mini Games</span>
-    <span class="strip-item"><span class="strip-dot">✦</span> Sistem RPG</span>
-    <span class="strip-item"><span class="strip-dot">✦</span> Manajemen Grup</span>
-    <span class="strip-item"><span class="strip-dot">✦</span> 373+ Commands</span>
-    <span class="strip-item"><span class="strip-dot">✦</span> 16 Kategori</span>
-  </div>
-</div>
-
-<div class="nums reveal">
-  <div class="num-box">
-    <div class="num-val"><span class="counter" data-t="373">0</span><em>+</em></div>
-    <div class="num-lbl">Commands</div>
-  </div>
-  <div class="num-box">
-    <div class="num-val"><span class="counter" data-t="16">0</span></div>
-    <div class="num-lbl">Kategori</div>
-  </div>
-  <div class="num-box">
-    <div class="num-val">24/7</div>
-    <div class="num-lbl">Online</div>
-  </div>
-  <div class="num-box">
-    <div class="num-val"><em>Rp</em><span class="counter" data-t="5">0</span>K</div>
-    <div class="num-lbl">Mulai dari</div>
-  </div>
-</div>
-
-<section class="sec" id="fitur">
-  <div class="sec-tag">Fitur</div>
-  <h2 class="sec-title">Semua fitur anti error.</h2>
-  <p class="sec-sub">Dari download media sampai AI, dari game seru sampai RPG — semuanya dalam satu bot.</p>
-  <div class="feat-grid reveal">
-    <div class="feat-card wide glow-on-hover">
-      <span class="feat-icon">🖼️</span>
-      <div class="feat-name">Sticker & Ephoto — 30+ Efek</div>
-      <div class="feat-desc">Buat sticker dari foto/video/GIF, enhance dengan AI Remini, hapus background otomatis, dan edit foto dengan 30+ efek — neon, glitch, watercolor, vintage, dan lebih banyak lagi.</div>
-      <div class="tags"><span class="tag">sticker</span><span class="tag">remini</span><span class="tag">removebg</span><span class="tag">neonglitch</span><span class="tag">watercolor</span><span class="tag">vintage</span></div>
-    </div>
-    <div class="feat-card glow-on-hover">
-      <span class="feat-icon">🤖</span>
-      <div class="feat-name">AI — Gemini & ChatGPT</div>
-      <div class="feat-desc">Chat langsung dengan AI canggih di WhatsApp. Tanya apapun, translate, atau fetch konten dari URL.</div>
-      <div class="tags"><span class="tag c">gemini</span><span class="tag c">chatgpt</span><span class="tag c">translate</span><span class="tag c">fetch</span></div>
-    </div>
-    <div class="feat-card glow-on-hover">
-      <span class="feat-icon">🎬</span>
-      <div class="feat-name">Download Media</div>
-      <div class="feat-desc">Download video & audio dari TikTok, YouTube, Instagram, Facebook, Spotify — tanpa watermark!</div>
-      <div class="tags"><span class="tag y">tiktok</span><span class="tag y">ytmp4</span><span class="tag y">instagram</span><span class="tag y">spotifydl</span></div>
-    </div>
-    <div class="feat-card glow-on-hover">
-      <span class="feat-icon">🎮</span>
-      <div class="feat-name">Mini Games Seru</div>
-      <div class="feat-desc">Main bareng di grup! Tebak lagu, tebak gambar, catur, tictactoe, family 100, akinator, dan banyak lagi.</div>
-      <div class="tags"><span class="tag p">tictactoe</span><span class="tag p">catur</span><span class="tag p">tebaklagu</span><span class="tag p">akinator</span></div>
-    </div>
-    <div class="feat-card glow-on-hover">
-      <span class="feat-icon">🗡️</span>
-      <div class="feat-name">Sistem RPG Lengkap</div>
-      <div class="feat-desc">RPG dengan gacha, crafting, mining, leaderboard, inventory, casino, dan ekonomi virtual seru di grup.</div>
-      <div class="tags"><span class="tag y">gacha</span><span class="tag y">adventure</span><span class="tag y">craft</span><span class="tag y">casino</span></div>
-    </div>
-    <div class="feat-card glow-on-hover">
-      <span class="feat-icon">🛡️</span>
-      <div class="feat-name">Manajemen Grup</div>
-      <div class="feat-desc">Antilink, antidelete, welcome member, kick, tagall, absensi, dan fitur admin lengkap lainnya.</div>
-      <div class="tags"><span class="tag">antilink</span><span class="tag">welcome</span><span class="tag">tagall</span><span class="tag">absen</span></div>
-    </div>
-  </div>
-</section>
-
-<section class="sec" id="harga" style="padding-top:0;">
-  <div class="sec-tag">Harga</div>
-  <h2 class="sec-title">Pilih plan yang pas.</h2>
-  <p class="sec-sub">Klik tombol order → langsung chat owner di WhatsApp.</p>
-  <div style="text-align:center;">
-    <div class="slot-pill">
-      <span id="slot-dot" style="width:7px;height:7px;border-radius:50%;background:var(--muted);display:inline-block;"></span>
-      <span id="slot-text">Mengecek slot...</span>
-    </div>
-  </div>
-  <div class="price-grid reveal" style="margin-top:44px;">
-    <div class="price-card glow-on-hover">
-      <div class="price-plan">Sewa Reguler</div>
-      <div class="price-val"><sup>Rp</sup>10K</div>
-      <div class="price-period">per bulan · per grup</div>
-      <div class="price-divider"></div>
-      <ul class="price-feats">
-        <li><span class="pcheck g">✓</span> Semua fitur umum</li>
-        <li><span class="pcheck g">✓</span> Sticker, AI, Download Media</li>
-        <li><span class="pcheck g">✓</span> Mini Games & RPG</li>
-        <li><span class="pcheck g">✓</span> Manajemen Grup</li>
-        <li><span class="pcheck g">✓</span> Ephoto 30+ efek</li>
-        <li class="dim"><span class="pcheck x">✗</span> Fitur NSFW (18+)</li>
-      </ul>
-      <a href="https://wa.me/6285801573242?text=Halo%20min%2C%20mau%20order%20*Sewa%20Reguler*%20BocchiBOT%20(Rp10.000%2F30%20hari)%20dong!" class="price-btn ghost" target="_blank">Order via WhatsApp →</a>
-    </div>
-    <div class="price-card featured glow-on-hover">
-      <div class="shimmer-line" style="position:absolute;top:0;left:0;right:0;"></div>
-      <div class="price-badge g">🔥 Terlengkap</div>
-      <div class="price-plan">Sewa + Upgrade Premium</div>
-      <div class="price-val"><sup>Rp</sup>15K</div>
-      <div class="price-period">per bulan · grup + user</div>
-      <div class="price-divider"></div>
-      <ul class="price-feats">
-        <li><span class="pcheck g">✓</span> Semua fitur Reguler</li>
-        <li><span class="pcheck g">✓</span> Sticker, AI, Download</li>
-        <li><span class="pcheck g">✓</span> Games, RPG, Ephoto</li>
-        <li><span class="pcheck g">✓</span> Manajemen Grup Pro</li>
-        <li><span class="pcheck y">★</span> <span style="color:var(--yellow);font-weight:700">Full akses NSFW (18+)</span></li>
-        <li><span class="pcheck c">✓</span> <span style="color:var(--cyan);">Paket paling hemat!</span></li>
-      </ul>
-      <a href="https://wa.me/6285801573242?text=Halo%20min%2C%20mau%20order%20*Paket%20Bundle%20Sewa%20%2B%20Upgrade%20Premium*%20BocchiBOT%20(Rp15.000%2F30%20hari)%20dong!" class="price-btn g" target="_blank">Order via WhatsApp →</a>
-    </div>
-    <div class="price-card yellow-card glow-on-hover">
-      <div class="price-badge y">⚡ Hemat</div>
-      <div class="price-plan">Paket Hemat</div>
-      <div class="price-val"><sup>Rp</sup>5K</div>
-      <div class="price-period">15 hari · per grup</div>
-      <div class="price-divider"></div>
-      <ul class="price-feats">
-        <li><span class="pcheck g">✓</span> Semua fitur umum</li>
-        <li><span class="pcheck g">✓</span> Sticker, AI, Download</li>
-        <li><span class="pcheck g">✓</span> Mini Games & RPG</li>
-        <li><span class="pcheck g">✓</span> Manajemen Grup</li>
-        <li><span class="pcheck g">✓</span> Ephoto 30+ efek</li>
-        <li class="dim"><span class="pcheck x">✗</span> Fitur NSFW (18+)</li>
-      </ul>
-      <a href="https://wa.me/6285801573242?text=Halo%20min%2C%20mau%20order%20*Paket%20Hemat*%20BocchiBOT%20(Rp5.000%2F15%20hari)%20dong!" class="price-btn y" target="_blank">Order via WhatsApp →</a>
-    </div>
-  </div>
-  <div class="price-grid-2 reveal">
-    <div class="price-card cyan-card glow-on-hover">
-      <div class="price-badge c">✦ Add-On</div>
-      <div class="price-plan">Upgrade Premium</div>
-      <div class="price-val"><sup>Rp</sup>5K</div>
-      <div class="price-period">per bulan · per user</div>
-      <div class="price-divider"></div>
-      <div class="price-req">🔒 Syarat: sewa aktif ≥ 15 hari tersisa</div>
-      <ul class="price-feats">
-        <li><span class="pcheck c">✓</span> Akses pribadi per user</li>
-        <li><span class="pcheck y">★</span> <span style="color:var(--yellow);font-weight:700">Full akses NSFW (18+)</span></li>
-        <li><span class="pcheck c">✓</span> Sticker, AI, Download</li>
-        <li class="dim"><span class="pcheck x">✗</span> Tidak bisa tanpa sewa aktif</li>
-      </ul>
-      <a href="https://wa.me/6285801573242?text=Halo%20min%2C%20mau%20order%20*Upgrade%20Premium*%20BocchiBOT%20(Rp5.000%2F30%20hari)%20dong!" class="price-btn c" target="_blank">Order via WhatsApp →</a>
-    </div>
-    <div class="price-card glow-on-hover" style="display:flex;flex-direction:column;justify-content:center;gap:18px;">
-      <div style="font-size:30px;">📱</div>
-      <div>
-        <div style="font-size:16px;font-weight:700;color:var(--white);margin-bottom:14px;">Cara Order Gampang!</div>
-        <div style="font-size:13px;color:var(--muted);line-height:2;">
-          <span style="color:var(--green);font-weight:700;">01.</span> Klik tombol <strong style="color:var(--white);">Order via WhatsApp</strong><br>
-          <span style="color:var(--green);font-weight:700;">02.</span> Pesan otomatis terisi — tinggal kirim<br>
-          <span style="color:var(--green);font-weight:700;">03.</span> Owner konfirmasi &amp; bot aktif! 🚀
-        </div>
-      </div>
-      <a href="https://wa.me/6285801573242?text=Halo%20min%2C%20mau%20tanya%20BocchiBOT!" class="price-btn ghost" style="margin-top:auto;" target="_blank">Tanya Owner →</a>
-    </div>
-  </div>
-</section>
-
-<section class="sec" id="cara" style="padding-top:0;">
-  <div class="sec-tag" style="justify-content:center;">Cara Order</div>
-  <h2 class="sec-title" style="text-align:center;">Tiga langkah, bot siap jalan.</h2>
-  <div class="steps reveal">
-    <div class="step">
-      <div class="step-n">01</div>
-      <span class="step-icon">🎯</span>
-      <div class="step-title">Pilih Paket</div>
-      <div class="step-desc">Pilih paket yang sesuai kebutuhan dan budget kamu dari tabel harga di atas.</div>
-    </div>
-    <div class="step" style="border-left:1px solid var(--border);border-right:1px solid var(--border);">
-      <div class="step-n">02</div>
-      <span class="step-icon">💬</span>
-      <div class="step-title">Chat Owner</div>
-      <div class="step-desc">Klik tombol order, pesan otomatis langsung terisi — tinggal kirim ke owner via WhatsApp.</div>
-    </div>
-    <div class="step">
-      <div class="step-n">03</div>
-      <span class="step-icon">🚀</span>
-      <div class="step-title">Bot Aktif!</div>
-      <div class="step-desc">Setelah konfirmasi pembayaran, bot langsung diaktifkan di grup kamu.</div>
-    </div>
-  </div>
-</section>
-
-<section class="sec" id="trust" style="padding-bottom:0;">
-  <div class="trust-box reveal">
-    <div class="trust-badges">
-      <span class="trust-badge g">✦ Bukan Bot Kaleng-Kaleng</span>
-      <span class="trust-badge y">⚡ Aktif Sejak 2023</span>
-      <span class="trust-badge c">🛠 Terus Dikembangkan</span>
-    </div>
-    <h2 class="trust-title">3 Tahun Berjalan,<br><em>Masih Kencang.</em></h2>
-    <p class="trust-desc">BocchiBOT bukan proyek iseng yang bakal kabur bulan depan. Sudah aktif sejak <strong style="color:var(--white);">2023</strong> dan terus berjalan sampai sekarang — dengan penambahan fitur rutin dan fix error yang cepat.</p>
-    <div class="timeline">
-      <div class="tl">
-        <div class="tl-left"><div class="tl-dot g"></div><div class="tl-line"></div></div>
-        <div class="tl-content">
-          <div class="tl-year">2023</div>
-          <div class="tl-title-txt">Lahir & Mulai Jalan</div>
-          <div class="tl-desc-txt">BocchiBOT pertama kali diluncurkan dengan fitur dasar — sticker, downloader, dan manajemen grup sederhana.</div>
-        </div>
-      </div>
-      <div class="tl">
-        <div class="tl-left"><div class="tl-dot c"></div><div class="tl-line"></div></div>
-        <div class="tl-content">
-          <div class="tl-year">2024</div>
-          <div class="tl-title-txt">Ekspansi Besar-Besaran</div>
-          <div class="tl-desc-txt">Integrasi AI (Gemini & ChatGPT), sistem RPG lengkap, mini games, dan ratusan command baru ditambahkan.</div>
-        </div>
-      </div>
-      <div class="tl">
-        <div class="tl-left"><div class="tl-dot y"></div></div>
-        <div class="tl-content">
-          <div class="tl-year">2025–2026</div>
-          <div class="tl-title-txt">Masih Aktif & Terus Update</div>
-          <div class="tl-desc-txt">373+ commands, 16 kategori, fix error instan, dan penambahan fitur baru secara berkala. Owner masih standby.</div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="trust-stats reveal">
-    <div class="ts"><div class="ts-icon">🏆</div><div class="ts-val">3+</div><div class="ts-lbl">Tahun Aktif</div><div class="ts-sub">2023 → sekarang</div></div>
-    <div class="ts"><div class="ts-icon">🔧</div><div class="ts-val">Fast</div><div class="ts-lbl">Fix Error</div><div class="ts-sub">Lapor → langsung difix</div></div>
-    <div class="ts"><div class="ts-icon">📦</div><div class="ts-val">Rutin</div><div class="ts-lbl">Update Fitur</div><div class="ts-sub">Terus berkembang</div></div>
-    <div class="ts"><div class="ts-icon">💬</div><div class="ts-val">Real</div><div class="ts-lbl">Owner Manusia</div><div class="ts-sub">Bukan bot auto-reply</div></div>
-  </div>
-</section>
-
-<section class="sec" id="faq">
-  <div class="sec-tag" style="justify-content:center;">FAQ</div>
-  <h2 class="sec-title" style="text-align:center;">Pertanyaan yang sering ditanya</h2>
-  <div class="faq-list reveal">
-    <div class="faq-item">
-      <div class="faq-q" onclick="toggleFaq(this)"><span>Ini beneran bukan bot kaleng-kaleng? Bisa tiba-tiba hilang?</span><span class="faq-icon">+</span></div>
-      <div class="faq-a">BocchiBOT sudah aktif sejak <strong style="color:var(--green);">2023</strong> — sampai 2026 masih kuat. Bukan proyek coba-coba. Owner aktif, update rutin jalan terus. Error langsung direspon dan difix.</div>
-    </div>
-    <div class="faq-item">
-      <div class="faq-q" onclick="toggleFaq(this)"><span>Apakah fitur bakal terus diupdate?</span><span class="faq-icon">+</span></div>
-      <div class="faq-a">Terus diupdate! Sejak 2023 sudah ratusan fitur ditambahkan — dari downloader dan sticker, sekarang ada AI Gemini, RPG, 30+ efek ephoto, mini games. Owner aktif nambahin fitur berdasarkan request.</div>
-    </div>
-    <div class="faq-item">
-      <div class="faq-q" onclick="toggleFaq(this)"><span>Kalau ada error, gimana?</span><span class="faq-icon">+</span></div>
-      <div class="faq-a">Lapor langsung ke owner via WhatsApp, dan error akan difix secepat mungkin. Owner manusia nyata, bukan bot auto-reply. Fix bisa dalam hitungan jam bahkan menit untuk bug kritis.</div>
-    </div>
-    <div class="faq-item">
-      <div class="faq-q" onclick="toggleFaq(this)"><span>Berapa lama proses aktivasi?</span><span class="faq-icon">+</span></div>
-      <div class="faq-a">Biasanya kurang dari 10 menit setelah pembayaran dikonfirmasi. Owner fast respon di jam aktif.</div>
-    </div>
-    <div class="faq-item">
-      <div class="faq-q" onclick="toggleFaq(this)"><span>Apa itu Upgrade Premium? Bedanya apa dengan Sewa biasa?</span><span class="faq-icon">+</span></div>
-      <div class="faq-a">Sewa = langganan per-grup yang mengaktifkan bot. Upgrade Premium = add-on per-user yang membuka fitur NSFW (18+), berlaku di grup manapun. Butuh sewa aktif minimal 15 hari tersisa.</div>
-    </div>
-    <div class="faq-item">
-      <div class="faq-q" onclick="toggleFaq(this)"><span>Metode pembayaran apa yang diterima?</span><span class="faq-icon">+</span></div>
-      <div class="faq-a">Transfer bank, DANA, GoPay, OVO, dan berbagai metode lain. Konfirmasi dengan owner saat order.</div>
-    </div>
-  </div>
-</section>
-
-<section class="cta">
-  <div class="reveal">
-    <h2>Siap pakai<br><em>BocchiBOT?</em></h2>
-    <p>Hubungi owner sekarang via WhatsApp untuk order atau tanya-tanya.</p>
-    <a href="https://wa.me/6285801573242?text=Halo%20min%2C%20mau%20tanya%20tentang%20BocchiBOT!" class="wa-btn" target="_blank">📱 Chat Owner Sekarang</a>
-  </div>
-</section>
-
-<footer>
-  <div class="footer-logo">Bocchi<em>BOT</em></div>
-  <div class="footer-copy">© 2025 Rayzell · Made with ❤️</div>
-  <div class="footer-links">
-    <a href="#fitur">Fitur</a>
-    <a href="#harga">Harga</a>
-    <a href="https://wa.me/6285801573242" target="_blank">WhatsApp</a>
-  </div>
-</footer>
-
-<!-- STATUS BANNER — klik → WA owner -->
-<a class="status-banner" id="statusBanner" href="https://wa.me/6285801573242?text=Halo%20min!" target="_blank">
-  <div class="s-ava">👤<span class="s-dot" id="sDot"></span></div>
-  <div class="s-info">
-    <div class="s-name">Owner BocchiBOT</div>
-    <div class="s-status" id="sLabel">Memuat...</div>
-    <div class="s-time" id="sTime"></div>
-  </div>
-  <div class="s-arrow">→</div>
-</a>
-
-<script>
-const API_BASE="https://simon-iso-kentucky-liability.trycloudflare.com";
-const STATUS_URL="https://lumaranmah156-spec.github.io/bochibot/status.json";
-
-/* progress bar */
-window.addEventListener('scroll',()=>{
-  document.getElementById('prog').style.width=(window.scrollY/(document.body.scrollHeight-window.innerHeight)*100)+'%';
-  document.getElementById('navbar').classList.toggle('scrolled',window.scrollY>40);
+// ── MODAL ────────────────────────────────────────────────────────────────────
+function openPayModal() {
+  renderPaket(); setStep(1);
+  document.getElementById("payOverlay").classList.add("show");
+  document.body.style.overflow = "hidden";
+}
+function closePayModal() {
+  document.getElementById("payOverlay").classList.remove("show");
+  document.body.style.overflow = "";
+  clearInterval(_poll); clearInterval(_timer);
+  _orderId = null; _paket = null;
+}
+document.getElementById("payOverlay").addEventListener("click", e => {
+  if (e.target.id === "payOverlay") closePayModal();
 });
 
-/* animated particles */
-(function(){
-  const c=document.getElementById('particles');
-  const colors=['rgba(0,240,130,','rgba(0,212,255,','rgba(168,85,247,'];
-  for(let i=0;i<18;i++){
-    const p=document.createElement('div');
-    p.className='particle';
-    const size=Math.random()*3+1;
-    const color=colors[Math.floor(Math.random()*colors.length)];
-    p.style.cssText=`
-      width:${size}px;height:${size}px;
-      left:${Math.random()*100}%;
-      background:${color+0.6})};
-      animation-duration:${Math.random()*15+10}s;
-      animation-delay:${Math.random()*-20}s;
-    `;
-    c.appendChild(p);
-  }
-})();
-
-/* counter animation */
-function animCounter(el){
-  const target=+el.dataset.t,dur=1800,start=performance.now();
-  const tick=now=>{
-    const p=Math.min((now-start)/dur,1);
-    el.textContent=Math.floor((1-Math.pow(1-p,3))*target);
-    if(p<1)requestAnimationFrame(tick);else el.textContent=target;
-  };
-  requestAnimationFrame(tick);
-}
-const cObs=new IntersectionObserver(entries=>{
-  entries.forEach(e=>{if(e.isIntersecting){animCounter(e.target);cObs.unobserve(e.target);}});
-},{threshold:0.5});
-document.querySelectorAll('.counter').forEach(el=>cObs.observe(el));
-
-/* reveal on scroll */
-const rObs=new IntersectionObserver(entries=>{
-  entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');});
-},{threshold:0.06});
-document.querySelectorAll('.reveal').forEach(el=>rObs.observe(el));
-
-/* faq toggle */
-function toggleFaq(el){
-  const item=el.parentElement,open=item.classList.contains('open');
-  document.querySelectorAll('.faq-item').forEach(i=>i.classList.remove('open'));
-  if(!open)item.classList.add('open');
+// ── STEPS ────────────────────────────────────────────────────────────────────
+function setStep(n) {
+  [1,2,3].forEach(i => {
+    document.getElementById(`pStep${i}`).style.display = i===n?"":"none";
+  });
+  // step dots: 4 dots total (1,2,3,voucher=4)
+  [1,2,3,4].forEach(i => {
+    const dot = document.getElementById(`sd${i}`);
+    if (!dot) return;
+    const mapped = n===3 ? 4 : n; // step3 UI = dot4
+    dot.className = "psd" + (i<mapped?" done":i===mapped?" active":"");
+  });
+  [1,2,3].forEach(i => {
+    const l = document.getElementById(`sl${i}`);
+    if (l) l.className = "psl" + (i<n?" done":"");
+  });
+  hideErr();
 }
 
-/* slot checker */
-async function checkSlot(){
-  try{
-    const d=await(await fetch(`${API_BASE}/slot`)).json();
-    const dot=document.getElementById('slot-dot'),txt=document.getElementById('slot-text');
-    if(d.tersedia){
-      dot.style.cssText='background:var(--green);box-shadow:0 0 7px var(--green);width:7px;height:7px;border-radius:50%;display:inline-block;animation:pulse 2s ease-in-out infinite;';
-      txt.style.color='var(--green)';
-      txt.textContent=`Slot aktif: ${d.aktif}/${d.max} — Tersedia!`;
-    }else{
-      dot.style.cssText='background:#ff3c50;width:7px;height:7px;border-radius:50%;display:inline-block;';
-      txt.style.color='#ff3c50';
-      txt.textContent=`Slot penuh (${d.aktif}/${d.max}) — Coba lagi nanti`;
+function showErr(msg) {
+  const e = document.getElementById("payErr");
+  e.textContent = "⚠️ "+msg; e.classList.add("show");
+}
+function hideErr() { document.getElementById("payErr").classList.remove("show"); }
+
+// ── BUAT ORDER ───────────────────────────────────────────────────────────────
+async function buatOrder() {
+  const link = document.getElementById("inputLink").value.trim();
+  if (!link || !_paket) return;
+  const btn = document.getElementById("btnOrder");
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spin"></div> Membuat order...';
+
+  try {
+    const res = await fetch(`${PAY_API}/order`, {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ linkGrup: link, paket: _paket }),
+    });
+    const data = await res.json();
+    if (!data.ok) {
+      showErr(data.error || "Gagal membuat order.");
+      btn.disabled = false; btn.innerHTML = "Lanjut ke Pembayaran →";
+      return;
     }
-  }catch{document.getElementById('slot-text').textContent='Cek slot: hubungi owner';}
-}
-checkSlot();
-
-/* status banner */
-function applyStatus(status){
-  const banner=document.getElementById('statusBanner');
-  const dot=document.getElementById('sDot');
-  const label=document.getElementById('sLabel');
-  const time=document.getElementById('sTime');
-  const now=new Date().toLocaleString('id-ID',{timeZone:'Asia/Jakarta',hour:'2-digit',minute:'2-digit'});
-  banner.className='status-banner';dot.className='s-dot';label.className='s-status';
-  if(status==='on'){
-    banner.classList.add('online');dot.classList.add('g');label.classList.add('g');
-    label.textContent='● FAST RESPON';
-    time.textContent=`Aktif sekarang · ${now} WIB`;
-    banner.style.borderColor='rgba(0,240,130,0.25)';
-    /* update WA link with context */
-    banner.href='https://wa.me/6285801573242?text=Halo%20min%2C%20mau%20tanya%20tentang%20BocchiBOT!';
-  }else if(status==='slow'){
-    banner.classList.add('slow');dot.classList.add('y');label.classList.add('y');
-    label.textContent='◐ SLOW RESPON';
-    time.textContent=`Mungkin lambat · ${now} WIB`;
-    banner.style.borderColor='rgba(247,204,68,0.2)';
-    banner.href='https://wa.me/6285801573242?text=Halo%20min!';
-  }else{
-    banner.classList.add('offline');dot.classList.add('r');label.classList.add('r');
-    label.textContent='○ ISTIRAHAT';
-    time.textContent='Fast respon mulai 09:00 WIB';
-    banner.style.borderColor='rgba(255,60,80,0.12)';
-    banner.href='https://wa.me/6285801573242?text=Halo%20min!';
+    _orderId = data.orderId;
+    showQR(data); setStep(2);
+    startTimer(data.expiredAt); startPoll(data.orderId);
+  } catch {
+    showErr("Tidak bisa konek ke server. Hubungi owner.");
+    btn.disabled = false; btn.innerHTML = "Lanjut ke Pembayaran →";
   }
 }
-async function fetchStatus(){
-  try{
-    const r=await fetch(`${STATUS_URL}?_=${Date.now()}`);
-    if(!r.ok)throw new Error();
-    applyStatus((await r.json()).status??'off');
-  }catch{applyStatus('off');}
+
+// ── QR ───────────────────────────────────────────────────────────────────────
+function showQR(data) {
+  const wrap = document.getElementById("qrCanvas");
+  wrap.innerHTML = "";
+  _qr = new QRCode(wrap, {
+    text: data.paymentNumber, width:220, height:220,
+    colorDark:"#000", colorLight:"#fff",
+    correctLevel: QRCode.CorrectLevel.H,
+  });
+  const p = PAKET_DATA[_paket];
+  document.getElementById("qrMeta").innerHTML = `
+    <div><div class="qm-val">${p.label}</div><div class="qm-lbl">PAKET</div></div>
+    <div><div class="qm-val">Rp${p.harga.toLocaleString("id-ID")}</div><div class="qm-lbl">NOMINAL</div></div>
+    <div><div class="qm-val">${data.menitSisa}m</div><div class="qm-lbl">BATAS BAYAR</div></div>`;
 }
-fetchStatus();
-setInterval(fetchStatus,15000);
+
+// ── TIMER ────────────────────────────────────────────────────────────────────
+function startTimer(expStr) {
+  clearInterval(_timer);
+  const exp = new Date(expStr).getTime();
+  const el = document.getElementById("payTimer");
+  const tick = () => {
+    const sisa = Math.max(0, exp - Date.now());
+    const m = Math.floor(sisa/60000), s = Math.floor((sisa%60000)/1000);
+    el.textContent = `⏳ Bayar dalam ${m}:${String(s).padStart(2,"0")}`;
+    el.className = "pay-timer" + (m<2?" urgent":"");
+    if (sisa<=0) {
+      clearInterval(_timer); clearInterval(_poll);
+      showErr("Waktu habis. Silakan order ulang.");
+      setTimeout(()=>setStep(1), 2000);
+    }
+  };
+  tick(); _timer = setInterval(tick, 1000);
+}
+
+// ── POLLING ──────────────────────────────────────────────────────────────────
+function startPoll(orderId) {
+  clearInterval(_poll);
+  _poll = setInterval(async () => {
+    try {
+      const res = await fetch(`${PAY_API}/order-status/${orderId}`);
+      const data = await res.json();
+      if (data.status === "paid") {
+        clearInterval(_poll); clearInterval(_timer);
+        showVoucher(data.voucherCode, data.paket, data.hari);
+      } else if (data.status === "expired" || data.status === "not_found") {
+        clearInterval(_poll); clearInterval(_timer);
+        showErr("Order expired. Silakan order ulang.");
+        setTimeout(()=>setStep(1), 2000);
+      }
+    } catch {}
+  }, 3000);
+}
+
+// ── BATALKAN ─────────────────────────────────────────────────────────────────
+async function batalOrder() {
+  clearInterval(_poll); clearInterval(_timer);
+  if (_orderId) {
+    try { await fetch(`${PAY_API}/order/${_orderId}`, {method:"DELETE"}); } catch {}
+  }
+  _orderId = null; setStep(1);
+  document.getElementById("btnOrder").disabled = false;
+  document.getElementById("btnOrder").innerHTML = "Lanjut ke Pembayaran →";
+}
+
+// ── VOUCHER REVEAL ───────────────────────────────────────────────────────────
+function showVoucher(code, paketLabel, hari) {
+  document.getElementById("vCodeText").textContent = code;
+  document.getElementById("cmdVoucher").textContent = code;
+
+  // Link WA langsung ke bot dengan perintah sudah terisi
+  const msg = encodeURIComponent(`.claimvoucher ${code}`);
+  document.getElementById("waClaimBtn").href = `https://wa.me/${BOT_NUMBER}?text=${msg}`;
+
+  setStep(3);
+}
+
+// ── COPY HELPERS ─────────────────────────────────────────────────────────────
+function copyVoucher() {
+  const code = document.getElementById("vCodeText").textContent;
+  navigator.clipboard.writeText(code).then(()=>{
+    document.getElementById("copyHint").textContent = "✓ Disalin!";
+    document.getElementById("copyHint").classList.add("copied");
+    showToast(); setTimeout(()=>{
+      document.getElementById("copyHint").textContent = "Klik untuk salin kode";
+      document.getElementById("copyHint").classList.remove("copied");
+    }, 2000);
+  });
+}
+function copyCmd() {
+  const code = document.getElementById("vCodeText").textContent;
+  navigator.clipboard.writeText(`.claimvoucher ${code}`).then(()=>showToast());
+}
+function showToast() {
+  const t = document.getElementById("copiedToast");
+  t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"), 2000);
+}
 </script>
-</body>
-</html>
