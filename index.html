@@ -3,816 +3,515 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BocchiBOT — Bot WhatsApp Otomatis</title>
+  <title>Rayzell — Developer Portfolio</title>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --surface:  #0b0f1a;
-      --surface2: #111827;
-      --surface3: #1a2234;
-      --border:   #1f2d45;
-      --green:    #00f082;
-      --cyan:     #00d4ff;
-      --purple:   #a855f7;
-      --yellow:   #f0c000;
-      --white:    #e8eef8;
-      --muted:    #5a6a85;
-      --red:      #ff3c50;
+      --bg:       #080c14;
+      --bg2:      #0f1621;
+      --bg3:      #161e2e;
+      --border:   #1e2d44;
+      --purple:   #a78bfa;
+      --cyan:     #22d3ee;
+      --green:    #34d399;
+      --pink:     #f472b6;
+      --amber:    #fbbf24;
+      --white:    #e2e8f0;
+      --muted:    #4b5e7a;
+      --muted2:   #6b7fa0;
     }
-
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
+    html { scroll-behavior: smooth; }
     body {
-      background: var(--surface);
+      background: var(--bg);
       color: var(--white);
       font-family: 'Space Grotesk', sans-serif;
       min-height: 100vh;
       overflow-x: hidden;
     }
 
-    /* ── BG EFFECTS ── */
-    .bg-glow {
+    /* BG */
+    .bg-noise {
       position: fixed; inset: 0; pointer-events: none; z-index: 0;
       background:
-        radial-gradient(ellipse 60% 40% at 20% 20%, rgba(0,240,130,0.06) 0%, transparent 60%),
-        radial-gradient(ellipse 50% 35% at 80% 80%, rgba(0,212,255,0.05) 0%, transparent 60%),
-        radial-gradient(ellipse 40% 30% at 60% 40%, rgba(168,85,247,0.04) 0%, transparent 50%);
+        radial-gradient(ellipse 70% 50% at 10% 10%, rgba(167,139,250,0.07) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 90% 80%, rgba(34,211,238,0.06) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 35% at 50% 50%, rgba(52,211,153,0.04) 0%, transparent 50%);
     }
-    .bg-grid {
-      position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.03;
+    .grid-lines {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.025;
       background-image: linear-gradient(var(--border) 1px, transparent 1px),
                         linear-gradient(90deg, var(--border) 1px, transparent 1px);
-      background-size: 40px 40px;
+      background-size: 48px 48px;
     }
 
-    /* ── NAVBAR ── */
+    /* NAV */
     nav {
-      position: relative; z-index: 10;
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
       display: flex; align-items: center; justify-content: space-between;
-      padding: 20px 40px;
+      padding: 16px 40px;
       border-bottom: 1px solid rgba(255,255,255,0.04);
-      backdrop-filter: blur(10px);
+      backdrop-filter: blur(20px);
+      background: rgba(8,12,20,0.7);
     }
     .nav-logo {
-      display: flex; align-items: center; gap: 10px;
-      font-weight: 700; font-size: 16px; color: var(--white);
-    }
-    .nav-logo-dot {
-      width: 10px; height: 10px; border-radius: 50%;
-      background: var(--green);
-      box-shadow: 0 0 10px var(--green);
-      animation: pulse 2s ease-in-out infinite;
-    }
-    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.6;transform:scale(0.85)} }
-    .nav-badge {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 10px; color: var(--green);
-      border: 1px solid rgba(0,240,130,0.2);
-      background: rgba(0,240,130,0.06);
-      padding: 4px 10px; border-radius: 100px;
-    }
-
-    /* ── HERO ── */
-    .hero {
-      position: relative; z-index: 1;
-      max-width: 760px; margin: 0 auto;
-      padding: 80px 24px 60px;
-      text-align: center;
-    }
-    .hero-tag {
-      display: inline-flex; align-items: center; gap: 7px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
-      color: var(--cyan); background: rgba(0,212,255,0.07);
-      border: 1px solid rgba(0,212,255,0.15);
-      padding: 6px 14px; border-radius: 100px;
-      margin-bottom: 28px;
-      animation: fadeUp 0.6s ease both;
-    }
-    .hero-tag::before { content:''; width:6px;height:6px;border-radius:50%;background:var(--cyan); }
-    .hero h1 {
-      font-size: clamp(2.4rem, 6vw, 4rem);
-      font-weight: 700; line-height: 1.1;
+      font-size: 14px; font-weight: 700;
       color: var(--white);
-      margin-bottom: 20px;
-      animation: fadeUp 0.6s 0.1s ease both;
-    }
-    .hero h1 span { color: var(--green); }
-    .hero p {
-      font-size: 16px; color: var(--muted); line-height: 1.8;
-      max-width: 520px; margin: 0 auto 36px;
-      animation: fadeUp 0.6s 0.2s ease both;
-    }
-    .hero-btns {
-      display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
-      animation: fadeUp 0.6s 0.3s ease both;
-    }
-    .btn-primary {
-      background: var(--green); color: #050810;
-      border: none; padding: 15px 36px; border-radius: 12px;
-      font-size: 15px; font-weight: 700; font-family: 'Space Grotesk', sans-serif;
-      cursor: pointer; transition: all 0.25s;
       display: flex; align-items: center; gap: 8px;
     }
-    .btn-primary:hover {
-      box-shadow: 0 6px 28px rgba(0,240,130,0.35);
-      transform: translateY(-2px);
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--purple); animation: pulse 2s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.8)} }
+    .nav-links { display: flex; gap: 28px; }
+    .nav-links a {
+      font-size: 13px; color: var(--muted2); text-decoration: none;
+      transition: color 0.2s; font-weight: 500;
     }
-    .btn-secondary {
-      background: transparent; color: var(--muted);
-      border: 1px solid var(--border); padding: 15px 28px;
-      border-radius: 12px; font-size: 14px; font-weight: 600;
-      font-family: 'Space Grotesk', sans-serif;
-      cursor: pointer; transition: all 0.25s;
-    }
-    .btn-secondary:hover { border-color: rgba(255,255,255,0.15); color: var(--white); }
+    .nav-links a:hover { color: var(--white); }
 
-    @keyframes fadeUp {
-      from { opacity:0; transform: translateY(20px); }
-      to   { opacity:1; transform: translateY(0); }
-    }
-
-    /* ── STATS ── */
-    .stats {
+    /* HERO */
+    .hero {
       position: relative; z-index: 1;
-      display: flex; justify-content: center; gap: 0;
-      max-width: 600px; margin: 0 auto 80px;
-      border: 1px solid var(--border); border-radius: 16px;
-      background: var(--surface2);
-      overflow: hidden;
-      animation: fadeUp 0.6s 0.4s ease both;
+      min-height: 100vh;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      text-align: center; padding: 100px 24px 60px;
     }
-    .stat-item {
-      flex: 1; padding: 20px 16px; text-align: center;
-      border-right: 1px solid var(--border);
-    }
-    .stat-item:last-child { border-right: none; }
-    .stat-val {
-      font-size: 22px; font-weight: 700; color: var(--white);
-      margin-bottom: 4px;
-    }
-    .stat-val.g { color: var(--green); }
-    .stat-val.c { color: var(--cyan); }
-    .stat-val.p { color: var(--purple); }
-    .stat-lbl {
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 9px; color: var(--muted);
-      letter-spacing: 0.1em; text-transform: uppercase;
+      font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--purple); background: rgba(167,139,250,0.08);
+      border: 1px solid rgba(167,139,250,0.18);
+      padding: 6px 16px; border-radius: 100px; margin-bottom: 32px;
     }
-
-    /* ── FEATURES ── */
-    .section {
-      position: relative; z-index: 1;
-      max-width: 900px; margin: 0 auto 80px;
-      padding: 0 24px;
+    .avatar {
+      width: 96px; height: 96px; border-radius: 50%;
+      background: linear-gradient(135deg, rgba(167,139,250,0.2), rgba(34,211,238,0.15));
+      border: 1px solid rgba(167,139,250,0.25);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 36px; margin: 0 auto 28px;
+      position: relative;
     }
-    .section-title {
-      text-align: center; margin-bottom: 40px;
+    .avatar::after {
+      content: '';
+      position: absolute; inset: -4px; border-radius: 50%;
+      border: 1px solid rgba(167,139,250,0.12);
     }
-    .section-title h2 {
-      font-size: 1.8rem; font-weight: 700; color: var(--white);
-      margin-bottom: 8px;
+    .hero h1 {
+      font-size: clamp(2.6rem, 7vw, 4.5rem);
+      font-weight: 700; line-height: 1.05;
+      color: var(--white); margin-bottom: 16px;
+      letter-spacing: -0.02em;
     }
-    .section-title p { font-size: 14px; color: var(--muted); }
-
-    .features {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 16px;
+    .hero h1 .grad {
+      background: linear-gradient(90deg, var(--purple), var(--cyan));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
-    .feature-card {
-      background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 16px; padding: 22px;
+    .hero-sub {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px; color: var(--muted2); margin-bottom: 12px;
+    }
+    .hero-bio {
+      font-size: 16px; color: var(--muted2); line-height: 1.8;
+      max-width: 500px; margin: 0 auto 36px;
+    }
+    .hero-bio span { color: var(--purple); }
+    .hero-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .btn {
+      padding: 13px 28px; border-radius: 12px;
+      font-size: 14px; font-weight: 700;
+      font-family: 'Space Grotesk', sans-serif;
+      cursor: pointer; text-decoration: none;
+      display: inline-flex; align-items: center; gap: 8px;
       transition: all 0.25s;
     }
-    .feature-card:hover {
-      border-color: rgba(0,240,130,0.2);
-      transform: translateY(-3px);
-      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    .btn-primary { background: var(--purple); color: #0a0616; border: none; }
+    .btn-primary:hover { box-shadow: 0 6px 28px rgba(167,139,250,0.3); transform: translateY(-2px); }
+    .btn-ghost {
+      background: transparent; color: var(--muted2);
+      border: 1px solid var(--border);
     }
-    .feat-icon {
-      font-size: 28px; margin-bottom: 14px;
-      display: block;
-    }
-    .feat-title { font-size: 14px; font-weight: 700; color: var(--white); margin-bottom: 6px; }
-    .feat-desc { font-size: 13px; color: var(--muted); line-height: 1.6; }
+    .btn-ghost:hover { border-color: rgba(255,255,255,0.15); color: var(--white); transform: translateY(-2px); }
 
-    /* ── PAKET SECTION ── */
-    .paket-section {
+    /* STATS BAR */
+    .stats-bar {
       position: relative; z-index: 1;
-      max-width: 900px; margin: 0 auto 80px;
+      display: flex; justify-content: center;
+      max-width: 560px; margin: 0 auto 90px;
+      border: 1px solid var(--border); border-radius: 16px;
+      background: var(--bg2); overflow: hidden;
+    }
+    .sbar-item { flex: 1; padding: 18px 12px; text-align: center; border-right: 1px solid var(--border); }
+    .sbar-item:last-child { border-right: none; }
+    .sbar-val { font-size: 20px; font-weight: 700; margin-bottom: 3px; }
+    .sbar-lbl { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; }
+
+    /* SECTIONS */
+    section {
+      position: relative; z-index: 1;
+      max-width: 900px; margin: 0 auto 90px;
       padding: 0 24px;
     }
-    .paket-cards {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 12px;
+    .sec-header {
+      display: flex; align-items: center; gap: 14px; margin-bottom: 36px;
     }
-    .paket-card {
-      background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 14px; padding: 18px 14px;
+    .sec-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--cyan); background: rgba(34,211,238,0.07);
+      border: 1px solid rgba(34,211,238,0.15);
+      padding: 4px 12px; border-radius: 100px;
+    }
+    .sec-title { font-size: 1.6rem; font-weight: 700; color: var(--white); }
+    .sec-line { flex: 1; height: 1px; background: var(--border); }
+
+    /* ABOUT */
+    .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .about-card {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 16px; padding: 22px;
+    }
+    .about-card h3 { font-size: 13px; font-weight: 700; color: var(--white); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+    .about-card p { font-size: 13px; color: var(--muted2); line-height: 1.7; }
+    .about-card.full { grid-column: 1 / -1; }
+    .ic { font-size: 16px; }
+
+    /* SKILLS */
+    .skills-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; }
+    .skill-pill {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 12px; padding: 14px 10px; text-align: center;
       transition: all 0.2s;
     }
-    .paket-card:hover { border-color: rgba(0,240,130,0.2); transform: translateY(-2px); }
-    .paket-card.prem { border-color: rgba(168,85,247,0.2); }
-    .pc-name { font-size: 13px; font-weight: 700; color: var(--white); margin-bottom: 4px; }
-    .pc-hari { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--muted); margin-bottom:10px; }
-    .pc-price { font-size: 16px; font-weight: 700; color: var(--green); }
-    .paket-card.prem .pc-price { color: var(--purple); }
-    .pc-tag {
-      display:inline-block; font-family:'JetBrains Mono',monospace;
-      font-size:7px; border-radius:4px; padding:2px 6px; margin-left:5px;
-      vertical-align:middle;
-    }
-    .pc-tag.p { background:rgba(168,85,247,0.12); color:var(--purple); border:1px solid rgba(168,85,247,0.2); }
+    .skill-pill:hover { transform: translateY(-3px); border-color: rgba(167,139,250,0.25); }
+    .skill-icon { font-size: 22px; margin-bottom: 8px; display: block; }
+    .skill-name { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted2); }
 
-    /* ── HOW IT WORKS ── */
-    .steps-row {
-      display: flex; gap: 0; position: relative;
+    /* PROJECTS */
+    .projects-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+    .project-card {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 18px; padding: 24px; position: relative;
+      transition: all 0.25s; overflow: hidden;
     }
-    .steps-row::before {
-      content:''; position:absolute; top:20px; left:20px; right:20px; height:1px;
-      background: linear-gradient(90deg, transparent, var(--border), var(--border), transparent);
-      z-index:0;
+    .project-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      opacity: 0; transition: opacity 0.25s;
     }
-    .step-item {
-      flex:1; text-align:center; padding: 0 12px; position:relative; z-index:1;
+    .project-card.purple::before { background: linear-gradient(90deg, var(--purple), var(--pink)); }
+    .project-card.cyan::before { background: linear-gradient(90deg, var(--cyan), var(--green)); }
+    .project-card.amber::before { background: linear-gradient(90deg, var(--amber), var(--pink)); }
+    .project-card:hover { border-color: rgba(167,139,250,0.2); transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.3); }
+    .project-card:hover::before { opacity: 1; }
+    .proj-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+    .proj-icon { font-size: 28px; }
+    .proj-badge {
+      font-family: 'JetBrains Mono', monospace; font-size: 9px;
+      padding: 4px 10px; border-radius: 100px;
     }
-    .step-num {
-      width:40px; height:40px; border-radius:50%;
-      background: var(--surface2); border: 1px solid var(--border);
-      display:flex; align-items:center; justify-content:center;
-      font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:700;
-      color: var(--green); margin: 0 auto 14px;
+    .badge-live { background: rgba(52,211,153,0.1); color: var(--green); border: 1px solid rgba(52,211,153,0.2); }
+    .badge-dev { background: rgba(251,191,36,0.1); color: var(--amber); border: 1px solid rgba(251,191,36,0.2); }
+    .badge-done { background: rgba(167,139,250,0.1); color: var(--purple); border: 1px solid rgba(167,139,250,0.2); }
+    .proj-name { font-size: 15px; font-weight: 700; color: var(--white); margin-bottom: 6px; }
+    .proj-desc { font-size: 13px; color: var(--muted2); line-height: 1.6; margin-bottom: 16px; }
+    .proj-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+    .proj-tag {
+      font-family: 'JetBrains Mono', monospace; font-size: 9px;
+      background: var(--bg3); border: 1px solid var(--border);
+      color: var(--muted2); padding: 3px 8px; border-radius: 6px;
     }
-    .step-title { font-size:13px; font-weight:700; color:var(--white); margin-bottom:6px; }
-    .step-desc { font-size:12px; color:var(--muted); line-height:1.6; }
+    .proj-link {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 12px; color: var(--purple); text-decoration: none;
+      margin-top: 14px; font-weight: 600;
+      transition: gap 0.2s;
+    }
+    .proj-link:hover { gap: 8px; }
 
-    /* ── CTA ── */
-    .cta-box {
-      position: relative; z-index:1;
-      max-width: 600px; margin: 0 auto 80px;
-      padding: 40px 32px; text-align:center;
-      background: linear-gradient(135deg, rgba(0,240,130,0.06), rgba(0,212,255,0.04));
-      border: 1px solid rgba(0,240,130,0.15);
-      border-radius: 24px;
+    /* SOCIALS */
+    .socials-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+    .social-card {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 14px; padding: 18px 20px;
+      display: flex; align-items: center; gap: 14px;
+      text-decoration: none; transition: all 0.2s;
     }
-    .cta-box h2 { font-size:1.6rem; font-weight:700; color:var(--white); margin-bottom:10px; }
-    .cta-box p { font-size:14px; color:var(--muted); margin-bottom:24px; line-height:1.7; }
+    .social-card:hover { transform: translateY(-3px); border-color: rgba(255,255,255,0.1); }
+    .social-icon { font-size: 24px; flex-shrink: 0; }
+    .social-name { font-size: 13px; font-weight: 700; color: var(--white); margin-bottom: 2px; }
+    .social-handle { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted2); }
+    .social-arrow { margin-left: auto; color: var(--muted); font-size: 16px; }
 
-    /* ── FOOTER ── */
+    /* BOCCHIBOT CTA */
+    .bocchi-cta {
+      position: relative; z-index: 1;
+      max-width: 900px; margin: 0 auto 90px;
+      padding: 0 24px;
+    }
+    .cta-inner {
+      background: var(--bg2); border: 1px solid rgba(167,139,250,0.2);
+      border-radius: 24px; padding: 40px;
+      display: grid; grid-template-columns: 1fr auto; gap: 24px; align-items: center;
+      position: relative; overflow: hidden;
+    }
+    .cta-inner::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--purple), var(--cyan), transparent);
+    }
+    .cta-label {
+      font-family: 'JetBrains Mono', monospace; font-size: 9px;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--purple); margin-bottom: 10px;
+    }
+    .cta-title { font-size: 1.4rem; font-weight: 700; color: var(--white); margin-bottom: 8px; }
+    .cta-desc { font-size: 13px; color: var(--muted2); line-height: 1.7; }
+    .cta-price {
+      font-family: 'JetBrains Mono', monospace;
+      text-align: center; flex-shrink: 0;
+    }
+    .cta-from { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; }
+    .cta-amount { font-size: 28px; font-weight: 700; color: var(--green); }
+    .cta-period { font-size: 10px; color: var(--muted2); }
+
+    /* FOOTER */
     footer {
-      position: relative; z-index:1;
-      text-align:center; padding: 24px;
+      position: relative; z-index: 1;
+      text-align: center; padding: 28px 24px;
       border-top: 1px solid rgba(255,255,255,0.04);
-      font-family:'JetBrains Mono',monospace;
-      font-size:11px; color:var(--muted);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; color: var(--muted);
     }
 
-    @media(max-width:600px) {
-      nav { padding: 16px 20px; }
-      .hero { padding: 50px 20px 40px; }
-      .steps-row { flex-direction:column; gap:24px; }
-      .steps-row::before { display:none; }
-      .stat-val { font-size:18px; }
-    }
-
-    /* ══════════════════════════════════════════════════
-       PAYMENT MODAL STYLES
-    ══════════════════════════════════════════════════ */
-    .pay-overlay{
-      position:fixed;inset:0;z-index:500;
-      background:rgba(4,6,14,0.92);backdrop-filter:blur(20px);
-      display:flex;align-items:center;justify-content:center;padding:20px;
-      opacity:0;pointer-events:none;transition:opacity 0.35s;
-    }
-    .pay-overlay.show{opacity:1;pointer-events:all;}
-    .pay-modal{
-      background:var(--surface2);border:1px solid var(--border);border-radius:24px;
-      width:100%;max-width:480px;max-height:92vh;overflow-y:auto;
-      transform:translateY(28px) scale(0.97);
-      transition:transform 0.38s cubic-bezier(.22,1,.36,1);
-      position:relative;scrollbar-width:thin;scrollbar-color:var(--border) transparent;
-    }
-    .pay-overlay.show .pay-modal{transform:none;}
-    .pay-modal::-webkit-scrollbar{width:3px;}
-    .pay-modal::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
-    .pay-hdr{padding:26px 28px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
-    .pay-hdr-title{font-size:15px;font-weight:700;color:var(--white);display:flex;align-items:center;gap:10px;}
-    .pay-close{width:32px;height:32px;border-radius:9px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;line-height:1;}
-    .pay-close:hover{border-color:rgba(255,60,80,0.3);color:#ff3c50;}
-    .pay-body{padding:22px 28px;}
-    .pay-steps{display:flex;align-items:center;gap:0;margin-bottom:26px;}
-    .psd{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;border:1px solid var(--border);color:var(--muted);background:var(--surface);flex-shrink:0;transition:all 0.3s;}
-    .psd.active{background:var(--green);color:#050810;border-color:var(--green);box-shadow:0 0 12px rgba(0,240,130,0.35);}
-    .psd.done{background:rgba(0,240,130,0.1);color:var(--green);border-color:rgba(0,240,130,0.2);}
-    .psl{flex:1;height:1px;background:var(--border);transition:background 0.3s;}
-    .psl.done{background:rgba(0,240,130,0.25);}
-    .pay-label{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:7px;}
-    .pay-input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:12px 15px;font-size:14px;color:var(--white);font-family:'Space Grotesk',sans-serif;outline:none;transition:border-color 0.2s;}
-    .pay-input:focus{border-color:rgba(0,240,130,0.3);}
-    .pay-input::placeholder{color:var(--muted);}
-    .paket-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-bottom:18px;}
-    .paket-btn{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:13px 11px;text-align:left;cursor:pointer;transition:all 0.2s;font-family:'Space Grotesk',sans-serif;}
-    .paket-btn:hover{border-color:rgba(0,240,130,0.18);}
-    .paket-btn.selected{border-color:var(--green);background:rgba(0,240,130,0.05);box-shadow:0 0 14px rgba(0,240,130,0.08);}
-    .paket-btn.prem.selected{border-color:var(--purple);background:rgba(168,85,247,0.05);box-shadow:0 0 14px rgba(168,85,247,0.08);}
-    .pk-name{font-size:12px;font-weight:700;color:var(--white);margin-bottom:2px;}
-    .pk-sub{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);}
-    .pk-price{font-size:14px;font-weight:700;color:var(--green);margin-top:7px;}
-    .paket-btn.prem .pk-price{color:var(--purple);}
-    .pk-tag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:7px;border-radius:4px;padding:2px 5px;margin-left:4px;vertical-align:middle;}
-    .pk-tag.p{background:rgba(168,85,247,0.12);color:var(--purple);border:1px solid rgba(168,85,247,0.18);}
-    .pk-tag.e{background:rgba(0,212,255,0.08);color:var(--cyan);border:1px solid rgba(0,212,255,0.12);}
-    .pay-summary{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:13px 15px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center;}
-    .ps-left{font-size:13px;color:var(--muted);}
-    .ps-left strong{color:var(--white);}
-    .ps-price{font-size:20px;font-weight:700;color:var(--green);letter-spacing:-0.03em;}
-    .pay-btn{width:100%;padding:14px;border-radius:12px;border:none;font-size:14px;font-weight:700;font-family:'Space Grotesk',sans-serif;cursor:pointer;transition:all 0.25s;display:flex;align-items:center;justify-content:center;gap:8px;}
-    .pay-btn.g{background:var(--green);color:#050810;}
-    .pay-btn.g:hover:not(:disabled){box-shadow:0 4px 24px rgba(0,240,130,0.3);transform:translateY(-2px);}
-    .pay-btn.g:disabled{opacity:0.45;cursor:not-allowed;transform:none;}
-    .pay-btn.ghost{background:transparent;color:var(--muted);border:1px solid var(--border);margin-top:8px;}
-    .pay-btn.ghost:hover{border-color:rgba(255,60,80,0.25);color:#ff3c50;}
-    .qr-wrap{text-align:center;padding:10px 0 20px;}
-    .qr-box{display:inline-block;padding:14px;background:#fff;border-radius:14px;box-shadow:0 0 32px rgba(0,240,130,0.07);margin-bottom:14px;}
-    .pay-timer{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--yellow);letter-spacing:0.05em;margin:10px 0;}
-    .pay-timer.urgent{color:#ff3c50;animation:tpulse 1s ease-in-out infinite;}
-    @keyframes tpulse{0%,100%{opacity:1}50%{opacity:0.4}}
-    .qr-meta{background:rgba(0,240,130,0.04);border:1px solid rgba(0,240,130,0.1);border-radius:10px;padding:13px;margin-top:14px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center;}
-    .qm-val{font-size:13px;font-weight:700;color:var(--white);margin-bottom:2px;}
-    .qm-lbl{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);}
-    .poll-row{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);}
-    .poll-dots span{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--muted);animation:pb 1.2s ease-in-out infinite;margin:0 2px;}
-    .poll-dots span:nth-child(2){animation-delay:.2s;}
-    .poll-dots span:nth-child(3){animation-delay:.4s;}
-    @keyframes pb{0%,80%,100%{transform:scale(.7);opacity:.4}40%{transform:scale(1);opacity:1}}
-    .voucher-box{background:linear-gradient(135deg,rgba(0,240,130,0.07),rgba(0,212,255,0.04));border:1px solid rgba(0,240,130,0.2);border-radius:16px;padding:24px;text-align:center;margin-bottom:20px;position:relative;overflow:hidden;}
-    .voucher-box::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--green),var(--cyan),transparent);}
-    .vb-label{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:0.14em;text-transform:uppercase;margin-bottom:14px;}
-    .vb-code{font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:700;color:var(--white);letter-spacing:0.12em;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 20px;margin-bottom:10px;cursor:pointer;transition:all 0.2s;user-select:all;display:flex;align-items:center;justify-content:center;gap:12px;}
-    .vb-code:hover{border-color:rgba(0,240,130,0.3);background:rgba(0,240,130,0.04);}
-    .vb-copy-hint{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);}
-    .vb-copy-hint.copied{color:var(--green);}
-    .cmd-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:18px;}
-    .cmd-title{font-size:13px;font-weight:700;color:var(--white);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
-    .cmd-step{display:flex;gap:10px;align-items:flex-start;margin-bottom:8px;font-size:12px;color:var(--muted);line-height:1.6;}
-    .cmd-step:last-child{margin-bottom:0;}
-    .cmd-n{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--green);font-weight:700;flex-shrink:0;margin-top:1px;}
-    .cmd-code{display:inline-block;background:rgba(0,240,130,0.08);border:1px solid rgba(0,240,130,0.15);border-radius:6px;padding:3px 9px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--green);cursor:pointer;transition:all 0.2s;margin-top:3px;}
-    .cmd-code:hover{background:rgba(0,240,130,0.14);}
-    .pay-err{background:rgba(255,60,80,0.07);border:1px solid rgba(255,60,80,0.18);border-radius:9px;padding:11px 14px;font-size:13px;color:#ff3c50;margin-bottom:14px;display:none;}
-    .pay-err.show{display:block;}
-    .spin{width:15px;height:15px;border:2px solid rgba(0,0,0,0.15);border-top-color:#050810;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;}
-    @keyframes spin{to{transform:rotate(360deg)}}
-    .copied-toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--green);color:#050810;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;padding:8px 20px;border-radius:100px;opacity:0;transition:all 0.3s;pointer-events:none;z-index:600;}
-    .copied-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
-    @keyframes successPop{from{transform:scale(0)}to{transform:scale(1)}}
-    @media(max-width:480px){
-      .pay-body{padding:18px;}
-      .pay-hdr{padding:20px 18px 16px;}
-      .vb-code{font-size:22px;padding:12px 14px;}
+    @media (max-width: 640px) {
+      nav { padding: 14px 20px; }
+      .nav-links { gap: 16px; }
+      .about-grid { grid-template-columns: 1fr; }
+      .cta-inner { grid-template-columns: 1fr; }
+      .cta-price { text-align: left; }
     }
   </style>
 </head>
 <body>
 
-<div class="bg-glow"></div>
-<div class="bg-grid"></div>
+<div class="bg-noise"></div>
+<div class="grid-lines"></div>
 
-<!-- NAVBAR -->
+<!-- NAV -->
 <nav>
   <div class="nav-logo">
-    <div class="nav-logo-dot"></div>
-    BocchiBOT
+    <div class="dot"></div>
+    rayzell.dev
   </div>
-  <div class="nav-badge">v1.0 LIVE</div>
+  <div class="nav-links">
+    <a href="#about">About</a>
+    <a href="#projects">Projects</a>
+    <a href="#contact">Contact</a>
+  </div>
 </nav>
 
 <!-- HERO -->
-<section class="hero">
-  <div class="hero-tag">WhatsApp Bot Automation</div>
-  <h1>Bot WA Otomatis<br>untuk <span>Grup Kamu</span></h1>
-  <p>Bayar QRIS, dapat kode voucher, bot langsung join dan aktif di grup kamu. Cepat, aman, dan otomatis 24/7.</p>
+<div class="hero">
+  <div class="hero-eyebrow">🚀 Open for collab</div>
+  <div class="avatar">👾</div>
+  <h1><span class="grad">Rayzell</span></h1>
+  <p class="hero-sub">// self-taught developer · Indonesia</p>
+  <p class="hero-bio">
+    Just a <span>beginner</span> yang suka ngulik code sampai jam 2 pagi.<br>
+    Bikin bot, web, dan apapun yang kelihatan keren.
+  </p>
   <div class="hero-btns">
-    <button class="btn-primary" onclick="openPayModal()">🛒 Order Sekarang</button>
-    <button class="btn-secondary" onclick="document.getElementById('cara').scrollIntoView({behavior:'smooth'})">Cara Kerja →</button>
+    <a href="#projects" class="btn btn-primary">👾 Lihat Projects</a>
+    <a href="https://wa.me/6285801573242" target="_blank" class="btn btn-ghost">💬 Hire Me</a>
   </div>
-</section>
+</div>
 
 <!-- STATS -->
-<div class="stats" style="position:relative;z-index:1;margin:0 auto 80px;max-width:600px;">
-  <div class="stat-item">
-    <div class="stat-val g">10</div>
-    <div class="stat-lbl">Max Slot</div>
+<div class="stats-bar">
+  <div class="sbar-item">
+    <div class="sbar-val" style="color:var(--purple)">Self</div>
+    <div class="sbar-lbl">Taught</div>
   </div>
-  <div class="stat-item">
-    <div class="stat-val c">24/7</div>
-    <div class="stat-lbl">Online</div>
+  <div class="sbar-item">
+    <div class="sbar-val" style="color:var(--cyan)">WA</div>
+    <div class="sbar-lbl">Bot Dev</div>
   </div>
-  <div class="stat-item">
-    <div class="stat-val p">QRIS</div>
-    <div class="stat-lbl">Pembayaran</div>
+  <div class="sbar-item">
+    <div class="sbar-val" style="color:var(--green)">24/7</div>
+    <div class="sbar-lbl">Online</div>
   </div>
-  <div class="stat-item">
-    <div class="stat-val" style="color:var(--yellow)">Auto</div>
-    <div class="stat-lbl">Aktivasi</div>
+  <div class="sbar-item">
+    <div class="sbar-val" style="color:var(--amber)">ID</div>
+    <div class="sbar-lbl">Based</div>
   </div>
 </div>
 
-<!-- FEATURES -->
-<section class="section">
-  <div class="section-title">
-    <h2>Kenapa BocchiBOT?</h2>
-    <p>Semua otomatis, kamu tinggal duduk santai</p>
+<!-- ABOUT -->
+<section id="about">
+  <div class="sec-header">
+    <div class="sec-tag">about.md</div>
+    <div class="sec-title">Tentang Gue</div>
+    <div class="sec-line"></div>
   </div>
-  <div class="features">
-    <div class="feature-card">
-      <span class="feat-icon">⚡</span>
-      <div class="feat-title">Aktivasi Instan</div>
-      <div class="feat-desc">Setelah voucher diklaim, bot langsung join dan aktif di grup dalam hitungan detik.</div>
+  <div class="about-grid">
+    <div class="about-card full">
+      <h3><span class="ic">👤</span> Who am I?</h3>
+      <p>Halo! Gue Rayzell, developer otodidak asal Indonesia yang hobi bangun project iseng sampai jadi serius. Mulai dari belajar sendiri, ngulik dokumentasi, sampai debug error tengah malam — semua gue jalanin sendiri. Masih banyak yang perlu dipelajari, tapi gue percaya <strong style="color:var(--purple)">consistency beats talent</strong>.</p>
     </div>
-    <div class="feature-card">
-      <span class="feat-icon">🔒</span>
-      <div class="feat-title">Pembayaran Aman</div>
-      <div class="feat-desc">Menggunakan QRIS yang terverifikasi. Voucher hanya dibuat setelah pembayaran terkonfirmasi.</div>
+    <div class="about-card">
+      <h3><span class="ic">⚡</span> Cara Kerja</h3>
+      <p>Prefer kerja malem, kopi item, dan musik lo-fi. Suka eksplor teknologi baru dan langsung praktek daripada baca teori doang.</p>
     </div>
-    <div class="feature-card">
-      <span class="feat-icon">🤖</span>
-      <div class="feat-title">Full Otomatis</div>
-      <div class="feat-desc">Tidak perlu konfirmasi manual ke owner. Semua proses berjalan otomatis 24 jam.</div>
-    </div>
-    <div class="feature-card">
-      <span class="feat-icon">📦</span>
-      <div class="feat-title">Banyak Pilihan Paket</div>
-      <div class="feat-desc">Dari paket trial 1 hari hingga sultan 90 hari. Ada juga paket extend untuk perpanjang.</div>
+    <div class="about-card">
+      <h3><span class="ic">🎯</span> Goals</h3>
+      <p>Pengen jadi full-stack developer yang bisa bikin produk dari nol — dari backend, bot automation, sampai deploy ke production.</p>
     </div>
   </div>
 </section>
 
-<!-- PAKET -->
-<section class="paket-section" id="paket">
-  <div class="section-title">
-    <h2>Daftar Paket</h2>
-    <p>Pilih sesuai kebutuhan kamu</p>
+<!-- SKILLS -->
+<section>
+  <div class="sec-header">
+    <div class="sec-tag">skills.json</div>
+    <div class="sec-title">Tech Stack</div>
+    <div class="sec-line"></div>
   </div>
-  <div class="paket-cards">
-    <div class="paket-card"><div class="pc-name">TRIAL</div><div class="pc-hari">1 hari</div><div class="pc-price">Rp2.000</div></div>
-    <div class="paket-card"><div class="pc-name">HEMAT</div><div class="pc-hari">15 hari</div><div class="pc-price">Rp5.000</div></div>
-    <div class="paket-card"><div class="pc-name">MURAH</div><div class="pc-hari">30 hari</div><div class="pc-price">Rp10.000</div></div>
-    <div class="paket-card prem"><div class="pc-name">LENGKAP<span class="pc-tag p">PREM</span></div><div class="pc-hari">30 hari</div><div class="pc-price">Rp15.000</div></div>
-    <div class="paket-card prem"><div class="pc-name">SULTAN<span class="pc-tag p">PREM</span></div><div class="pc-hari">90 hari</div><div class="pc-price">Rp30.000</div></div>
-  </div>
-</section>
-
-<!-- HOW IT WORKS -->
-<section class="section" id="cara">
-  <div class="section-title">
-    <h2>Cara Kerja</h2>
-    <p>3 langkah mudah, bot langsung aktif</p>
-  </div>
-  <div class="steps-row">
-    <div class="step-item">
-      <div class="step-num">01</div>
-      <div class="step-title">Isi Form & Bayar</div>
-      <div class="step-desc">Masukkan link grup WA kamu, pilih paket, scan QR QRIS untuk bayar.</div>
-    </div>
-    <div class="step-item">
-      <div class="step-num">02</div>
-      <div class="step-title">Dapat Voucher</div>
-      <div class="step-desc">Setelah bayar, kode voucher unik langsung muncul otomatis.</div>
-    </div>
-    <div class="step-item">
-      <div class="step-num">03</div>
-      <div class="step-title">Klaim ke Bot</div>
-      <div class="step-desc">Kirim perintah <code style="color:var(--green);font-size:11px">.claimvoucher KODE</code> ke bot, selesai!</div>
-    </div>
+  <div class="skills-grid">
+    <div class="skill-pill"><span class="skill-icon">🟨</span><div class="skill-name">JavaScript</div></div>
+    <div class="skill-pill"><span class="skill-icon">🟩</span><div class="skill-name">Node.js</div></div>
+    <div class="skill-pill"><span class="skill-icon">🌐</span><div class="skill-name">HTML/CSS</div></div>
+    <div class="skill-pill"><span class="skill-icon">⚡</span><div class="skill-name">Express.js</div></div>
+    <div class="skill-pill"><span class="skill-icon">🤖</span><div class="skill-name">Baileys WA</div></div>
+    <div class="skill-pill"><span class="skill-icon">🐧</span><div class="skill-name">Linux VPS</div></div>
+    <div class="skill-pill"><span class="skill-icon">🔀</span><div class="skill-name">Nginx</div></div>
+    <div class="skill-pill"><span class="skill-icon">☁️</span><div class="skill-name">Cloudflare</div></div>
+    <div class="skill-pill"><span class="skill-icon">📦</span><div class="skill-name">PM2</div></div>
+    <div class="skill-pill"><span class="skill-icon">🐙</span><div class="skill-name">Git/GitHub</div></div>
   </div>
 </section>
 
-<!-- CTA -->
-<div class="cta-box" style="margin:0 24px 80px;max-width:600px;margin-left:auto;margin-right:auto;">
-  <div style="font-size:40px;margin-bottom:16px;">🎟️</div>
-  <h2>Siap Aktifkan Bot?</h2>
-  <p>Slot terbatas. Order sekarang dan bot langsung aktif di grup kamu.</p>
-  <button class="btn-primary" onclick="openPayModal()" style="margin:0 auto;">🛒 Order Sekarang</button>
+<!-- PROJECTS -->
+<section id="projects">
+  <div class="sec-header">
+    <div class="sec-tag">projects/</div>
+    <div class="sec-title">Projects</div>
+    <div class="sec-line"></div>
+  </div>
+  <div class="projects-grid">
+    <div class="project-card purple">
+      <div class="proj-top">
+        <span class="proj-icon">🤖</span>
+        <span class="proj-badge badge-live">● LIVE</span>
+      </div>
+      <div class="proj-name">BocchiBOT</div>
+      <div class="proj-desc">WhatsApp bot automation dengan sistem voucher berbasis QRIS. Bayar → dapat kode → bot aktif otomatis di grup kamu. Full otomatis 24/7.</div>
+      <div class="proj-tags">
+        <span class="proj-tag">Node.js</span>
+        <span class="proj-tag">Baileys</span>
+        <span class="proj-tag">Express</span>
+        <span class="proj-tag">QRIS</span>
+        <span class="proj-tag">VPS</span>
+      </div>
+      <a href="https://reyybot-whatsapp.my.id" target="_blank" class="proj-link">Lihat Website →</a>
+    </div>
+
+    <div class="project-card cyan">
+      <div class="proj-top">
+        <span class="proj-icon">⚔️</span>
+        <span class="proj-badge badge-done">✓ DONE</span>
+      </div>
+      <div class="proj-name">PGR Wiki Bot</div>
+      <div class="proj-desc">Bot WhatsApp yang scrape data karakter dari wiki Punishing: Gray Raven. Support fuzzy search, binary image handling, dan Cloudflare Worker proxy.</div>
+      <div class="proj-tags">
+        <span class="proj-tag">Node.js</span>
+        <span class="proj-tag">Cheerio</span>
+        <span class="proj-tag">CF Worker</span>
+        <span class="proj-tag">Baileys</span>
+      </div>
+    </div>
+
+    <div class="project-card amber">
+      <div class="proj-top">
+        <span class="proj-icon">📊</span>
+        <span class="proj-badge badge-done">✓ DONE</span>
+      </div>
+      <div class="proj-name">Futsal Field System</div>
+      <div class="proj-desc">Sistem analisis pencatatan penggunaan lapangan futsal. Dokumen lengkap: flowchart BAD, DFD level 0-2, Kamus Data, dan laporan PDF.</div>
+      <div class="proj-tags">
+        <span class="proj-tag">Python</span>
+        <span class="proj-tag">ReportLab</span>
+        <span class="proj-tag">DFD</span>
+        <span class="proj-tag">Systems Analysis</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BOCCHIBOT CTA -->
+<div class="bocchi-cta">
+  <div class="cta-inner">
+    <div>
+      <div class="cta-label">🎟️ Featured Service</div>
+      <div class="cta-title">Sewa BocchiBOT untuk Grup WA Kamu</div>
+      <div class="cta-desc">Bot WhatsApp otomatis yang langsung join dan aktif di grup kamu setelah bayar QRIS. Cocok buat komunitas, grup edukasi, atau apapun yang butuh bot aktif 24/7.</div>
+      <div style="margin-top: 18px; display: flex; gap: 10px; flex-wrap: wrap;">
+        <a href="https://reyybot-whatsapp.my.id" target="_blank" class="btn btn-primary" style="font-size:13px; padding: 11px 22px;">🛒 Order Sekarang</a>
+        <a href="https://wa.me/6285801573242" target="_blank" class="btn btn-ghost" style="font-size:13px; padding: 11px 22px;">💬 Tanya Owner</a>
+      </div>
+    </div>
+    <div class="cta-price">
+      <div class="cta-from">mulai dari</div>
+      <div class="cta-amount">2K</div>
+      <div class="cta-period">/ hari</div>
+    </div>
+  </div>
 </div>
+
+<!-- SOCIALS -->
+<section id="contact">
+  <div class="sec-header">
+    <div class="sec-tag">contact.yml</div>
+    <div class="sec-title">Hubungi Gue</div>
+    <div class="sec-line"></div>
+  </div>
+  <div class="socials-grid">
+    <a href="https://wa.me/6285801573242" target="_blank" class="social-card">
+      <span class="social-icon">💬</span>
+      <div>
+        <div class="social-name">WhatsApp</div>
+        <div class="social-handle">+62 858-0157-3242</div>
+      </div>
+      <span class="social-arrow">→</span>
+    </a>
+    <a href="https://github.com/lumaranmah156-spec" target="_blank" class="social-card">
+      <span class="social-icon">🐙</span>
+      <div>
+        <div class="social-name">GitHub</div>
+        <div class="social-handle">lumaranmah156-spec</div>
+      </div>
+      <span class="social-arrow">→</span>
+    </a>
+    <a href="https://reyybot-whatsapp.my.id" target="_blank" class="social-card">
+      <span class="social-icon">🤖</span>
+      <div>
+        <div class="social-name">BocchiBOT</div>
+        <div class="social-handle">reyybot-whatsapp.my.id</div>
+      </div>
+      <span class="social-arrow">→</span>
+    </a>
+  </div>
+</section>
 
 <!-- FOOTER -->
 <footer>
-  © 2025 BocchiBOT — Bot WhatsApp Otomatis &nbsp;·&nbsp; Hubungi owner: <a href="https://wa.me/6285801573242" style="color:var(--green);text-decoration:none;">WA</a>
+  © 2025 Rayzell &nbsp;·&nbsp; Built with ☕ and sleepless nights &nbsp;·&nbsp;
+  <a href="https://reyybot-whatsapp.my.id" style="color:var(--purple);text-decoration:none;">BocchiBOT</a>
 </footer>
 
-<!-- ══════════════════════════════════════════════
-     PAYMENT MODAL
-══════════════════════════════════════════════ -->
-<div class="pay-overlay" id="payOverlay">
-  <div class="pay-modal">
-    <div class="pay-hdr">
-      <div class="pay-hdr-title"><span>💳</span> Order BocchiBOT</div>
-      <button class="pay-close" onclick="closePayModal()">✕</button>
-    </div>
-    <div class="pay-body">
-      <div class="pay-steps">
-        <div class="psd active" id="sd1">1</div>
-        <div class="psl" id="sl1"></div>
-        <div class="psd" id="sd2">2</div>
-        <div class="psl" id="sl2"></div>
-        <div class="psd" id="sd3">3</div>
-        <div class="psl" id="sl3"></div>
-        <div class="psd" id="sd4">🎟</div>
-      </div>
-      <div class="pay-err" id="payErr"></div>
-
-      <!-- STEP 1 -->
-      <div id="pStep1">
-        <div style="margin-bottom:18px;">
-          <div class="pay-label">Link Grup WhatsApp</div>
-          <input class="pay-input" id="inputLink" type="text"
-            placeholder="https://chat.whatsapp.com/xxxxx"
-            oninput="validateS1()">
-          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-top:6px;">
-            Pastikan link aktif. Bot akan otomatis join setelah voucher diklaim.
-          </div>
-        </div>
-        <div class="pay-label">Pilih Paket</div>
-        <div class="paket-grid" id="paketGrid"></div>
-        <div class="pay-summary" id="pSummary" style="display:none;">
-          <div class="ps-left"><strong id="sNama">—</strong><br><span id="sHari">—</span></div>
-          <div class="ps-price" id="sHarga">—</div>
-        </div>
-        <button class="pay-btn g" id="btnOrder" onclick="buatOrder()" disabled>Lanjut ke Pembayaran →</button>
-      </div>
-
-      <!-- STEP 2 -->
-      <div id="pStep2" style="display:none;">
-        <div class="qr-wrap">
-          <div class="qr-box"><div id="qrCanvas"></div></div>
-          <div style="font-size:13px;color:var(--muted);">Scan QR pakai <strong style="color:var(--white)">mobile banking / e-wallet</strong></div>
-          <div class="pay-timer" id="payTimer">⏳ Menghitung...</div>
-          <div class="qr-meta" id="qrMeta"></div>
-          <div class="poll-row">
-            <div class="poll-dots"><span></span><span></span><span></span></div>
-            Menunggu pembayaran...
-          </div>
-        </div>
-        <button class="pay-btn ghost" onclick="batalOrder()">Batalkan</button>
-      </div>
-
-      <!-- STEP 3 -->
-      <div id="pStep3" style="display:none;">
-        <div style="text-align:center;margin-bottom:20px;">
-          <div style="font-size:44px;margin-bottom:10px;animation:successPop .5s cubic-bezier(.22,1,.36,1);">🎟️</div>
-          <div style="font-size:18px;font-weight:700;color:var(--white);margin-bottom:6px;">Pembayaran Berhasil!</div>
-          <div style="font-size:13px;color:var(--muted);line-height:1.7;">Kode voucher kamu sudah siap.<br>Kirim ke bot WhatsApp untuk aktivasi.</div>
-        </div>
-        <div class="voucher-box">
-          <div class="vb-label">Kode Voucher Kamu</div>
-          <div class="vb-code" id="voucherCode" onclick="copyVoucher()">
-            <span id="vCodeText">—</span>
-            <span style="font-size:16px;color:var(--muted);">⎘</span>
-          </div>
-          <div class="vb-copy-hint" id="copyHint">Klik untuk salin kode</div>
-        </div>
-        <div class="cmd-box">
-          <div class="cmd-title">📱 Cara Aktivasi</div>
-          <div class="cmd-step">
-            <span class="cmd-n">01</span>
-            <div>Buka WhatsApp, chat ke bot atau kirim di grup mana saja</div>
-          </div>
-          <div class="cmd-step">
-            <span class="cmd-n">02</span>
-            <div>
-              Kirim perintah:<br>
-              <span class="cmd-code" id="cmdText" onclick="copyCmd()">.claimvoucher <span id="cmdVoucher">—</span></span>
-            </div>
-          </div>
-          <div class="cmd-step">
-            <span class="cmd-n">03</span>
-            <div>Bot akan otomatis join grup dan aktifkan sewa! 🚀</div>
-          </div>
-        </div>
-        <a id="waClaimBtn" href="#" target="_blank" class="pay-btn g" style="text-decoration:none;margin-bottom:8px;">
-          💬 Klaim via Bot Sekarang
-        </a>
-        <button class="pay-btn ghost" onclick="closePayModal()">Tutup</button>
-      </div>
-
-    </div>
-  </div>
-</div>
-
-<div class="copied-toast" id="copiedToast">✓ Disalin!</div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script>
-const PAY_API    = "https://game-participants-symphony-generator.trycloudflare.com";
-const OWNER_WA   = "6285801573242";
-const BOT_NUMBER = "6285705977466";
-
-const PAKET_DATA = {
-  trial:    { label:"TRIAL",    hari:1,  harga:2000,  premium:false },
-  hemat:    { label:"HEMAT",    hari:15, harga:5000,  premium:false },
-  murah:    { label:"MURAH",    hari:30, harga:10000, premium:false },
-  lengkap:  { label:"LENGKAP",  hari:30, harga:15000, premium:true  },
-  sultan:   { label:"SULTAN",   hari:90, harga:30000, premium:true  },
-  extend7:  { label:"EXTEND7",  hari:7,  harga:4000,  premium:false },
-  extend14: { label:"EXTEND14", hari:14, harga:7000,  premium:false },
-  extend30: { label:"EXTEND30", hari:30, harga:10000, premium:false },
-};
-
-let _paket = null, _orderId = null, _poll = null, _timer = null, _qr = null;
-
-function renderPaket() {
-  const g = document.getElementById("paketGrid");
-  g.innerHTML = "";
-  const isExt = k => k.startsWith("extend");
-  [...Object.entries(PAKET_DATA).filter(([k])=>!isExt(k)),
-   ...Object.entries(PAKET_DATA).filter(([k])=>isExt(k))
-  ].forEach(([key, p]) => {
-    const b = document.createElement("button");
-    b.className = "paket-btn" + (p.premium?" prem":"");
-    b.dataset.key = key;
-    b.innerHTML = `
-      <div class="pk-name">${p.label}${p.premium?'<span class="pk-tag p">PREM</span>':""}${isExt(key)?'<span class="pk-tag e">EXT</span>':""}</div>
-      <div class="pk-sub">${p.hari} hari</div>
-      <div class="pk-price">Rp${p.harga.toLocaleString("id-ID")}</div>`;
-    b.onclick = () => selectPaket(key);
-    g.appendChild(b);
-  });
-}
-
-function selectPaket(key) {
-  _paket = key;
-  document.querySelectorAll(".paket-btn").forEach(b=>b.classList.remove("selected"));
-  document.querySelector(`.paket-btn[data-key="${key}"]`).classList.add("selected");
-  const p = PAKET_DATA[key];
-  document.getElementById("sNama").textContent = p.label;
-  document.getElementById("sHari").textContent = `${p.hari} hari${p.premium?" · 👑 Premium":""}`;
-  document.getElementById("sHarga").textContent = `Rp${p.harga.toLocaleString("id-ID")}`;
-  document.getElementById("pSummary").style.display = "flex";
-  validateS1();
-}
-
-function validateS1() {
-  const link = document.getElementById("inputLink").value.trim();
-  document.getElementById("btnOrder").disabled =
-    !(/chat\.whatsapp\.com\/[\w\d]+/.test(link)) || !_paket;
-}
-
-function openPayModal() {
-  renderPaket(); setStep(1);
-  document.getElementById("payOverlay").classList.add("show");
-  document.body.style.overflow = "hidden";
-}
-function closePayModal() {
-  document.getElementById("payOverlay").classList.remove("show");
-  document.body.style.overflow = "";
-  clearInterval(_poll); clearInterval(_timer);
-  _orderId = null; _paket = null;
-}
-document.getElementById("payOverlay").addEventListener("click", e => {
-  if (e.target.id === "payOverlay") closePayModal();
-});
-
-function setStep(n) {
-  [1,2,3].forEach(i => {
-    document.getElementById(`pStep${i}`).style.display = i===n?"":"none";
-  });
-  [1,2,3,4].forEach(i => {
-    const dot = document.getElementById(`sd${i}`);
-    if (!dot) return;
-    const mapped = n===3 ? 4 : n;
-    dot.className = "psd" + (i<mapped?" done":i===mapped?" active":"");
-  });
-  [1,2,3].forEach(i => {
-    const l = document.getElementById(`sl${i}`);
-    if (l) l.className = "psl" + (i<n?" done":"");
-  });
-  hideErr();
-}
-
-function showErr(msg) {
-  const e = document.getElementById("payErr");
-  e.textContent = "⚠️ "+msg; e.classList.add("show");
-}
-function hideErr() { document.getElementById("payErr").classList.remove("show"); }
-
-async function buatOrder() {
-  const link = document.getElementById("inputLink").value.trim();
-  if (!link || !_paket) return;
-  const btn = document.getElementById("btnOrder");
-  btn.disabled = true;
-  btn.innerHTML = '<div class="spin"></div> Membuat order...';
-  try {
-    const res = await fetch(`${PAY_API}/order`, {
-      method: "POST",
-      headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({ linkGrup: link, paket: _paket }),
-    });
-    const data = await res.json();
-    if (!data.ok) {
-      showErr(data.error || "Gagal membuat order.");
-      btn.disabled = false; btn.innerHTML = "Lanjut ke Pembayaran →";
-      return;
-    }
-    _orderId = data.orderId;
-    showQR(data); setStep(2);
-    startTimer(data.expiredAt); startPoll(data.orderId);
-  } catch {
-    showErr("Tidak bisa konek ke server. Hubungi owner.");
-    btn.disabled = false; btn.innerHTML = "Lanjut ke Pembayaran →";
-  }
-}
-
-function showQR(data) {
-  const wrap = document.getElementById("qrCanvas");
-  wrap.innerHTML = "";
-  _qr = new QRCode(wrap, {
-    text: data.paymentNumber, width:220, height:220,
-    colorDark:"#000", colorLight:"#fff",
-    correctLevel: QRCode.CorrectLevel.H,
-  });
-  const p = PAKET_DATA[_paket];
-  document.getElementById("qrMeta").innerHTML = `
-    <div><div class="qm-val">${p.label}</div><div class="qm-lbl">PAKET</div></div>
-    <div><div class="qm-val">Rp${p.harga.toLocaleString("id-ID")}</div><div class="qm-lbl">NOMINAL</div></div>
-    <div><div class="qm-val">${data.menitSisa}m</div><div class="qm-lbl">BATAS BAYAR</div></div>`;
-}
-
-function startTimer(expStr) {
-  clearInterval(_timer);
-  const exp = new Date(expStr).getTime();
-  const el = document.getElementById("payTimer");
-  const tick = () => {
-    const sisa = Math.max(0, exp - Date.now());
-    const m = Math.floor(sisa/60000), s = Math.floor((sisa%60000)/1000);
-    el.textContent = `⏳ Bayar dalam ${m}:${String(s).padStart(2,"0")}`;
-    el.className = "pay-timer" + (m<2?" urgent":"");
-    if (sisa<=0) {
-      clearInterval(_timer); clearInterval(_poll);
-      showErr("Waktu habis. Silakan order ulang.");
-      setTimeout(()=>setStep(1), 2000);
-    }
-  };
-  tick(); _timer = setInterval(tick, 1000);
-}
-
-function startPoll(orderId) {
-  clearInterval(_poll);
-  _poll = setInterval(async () => {
-    try {
-      const res = await fetch(`${PAY_API}/order-status/${orderId}`);
-      const data = await res.json();
-      if (data.status === "paid") {
-        clearInterval(_poll); clearInterval(_timer);
-        showVoucher(data.voucherCode, data.paket, data.hari);
-      } else if (data.status === "expired" || data.status === "not_found") {
-        clearInterval(_poll); clearInterval(_timer);
-        showErr("Order expired. Silakan order ulang.");
-        setTimeout(()=>setStep(1), 2000);
-      }
-    } catch {}
-  }, 3000);
-}
-
-async function batalOrder() {
-  clearInterval(_poll); clearInterval(_timer);
-  if (_orderId) {
-    try { await fetch(`${PAY_API}/order/${_orderId}`, {method:"DELETE"}); } catch {}
-  }
-  _orderId = null; setStep(1);
-  document.getElementById("btnOrder").disabled = false;
-  document.getElementById("btnOrder").innerHTML = "Lanjut ke Pembayaran →";
-}
-
-function showVoucher(code, paketLabel, hari) {
-  document.getElementById("vCodeText").textContent = code;
-  document.getElementById("cmdVoucher").textContent = code;
-  const msg = encodeURIComponent(`.claimvoucher ${code}`);
-  document.getElementById("waClaimBtn").href = `https://wa.me/${BOT_NUMBER}?text=${msg}`;
-  setStep(3);
-}
-
-function copyVoucher() {
-  const code = document.getElementById("vCodeText").textContent;
-  navigator.clipboard.writeText(code).then(()=>{
-    document.getElementById("copyHint").textContent = "✓ Disalin!";
-    document.getElementById("copyHint").classList.add("copied");
-    showToast();
-    setTimeout(()=>{
-      document.getElementById("copyHint").textContent = "Klik untuk salin kode";
-      document.getElementById("copyHint").classList.remove("copied");
-    }, 2000);
-  });
-}
-function copyCmd() {
-  const code = document.getElementById("vCodeText").textContent;
-  navigator.clipboard.writeText(`.claimvoucher ${code}`).then(()=>showToast());
-}
-function showToast() {
-  const t = document.getElementById("copiedToast");
-  t.classList.add("show");
-  setTimeout(()=>t.classList.remove("show"), 2000);
-}
-</script>
 </body>
 </html>
+
+
+
+
+Claude adalah AI dan bisa keliru. Harap periksa kembali respons.
